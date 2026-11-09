@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://virtualfudge.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://virtualfudge.com/industries/</loc></url>
+  <url><loc>https://virtualfudge.com/projects/</loc></url>
+  <url><loc>https://virtualfudge.com/blog/</loc></url>
+  <url><loc>https://virtualfudge.com/about-us/</loc></url>
+  <url><loc>https://virtualfudge.com/contact/</loc></url>
+  <url><loc>https://virtualfudge.com/events/</loc></url>
+  <url><loc>https://virtualfudge.com/get-a-quote/</loc></url>
+  <url><loc>https://virtualfudge.com/careers/</loc></url>
+  <url><loc>https://virtualfudge.com/privacy-policy/</loc></url>
   <url><loc>https://virtualfudge.com/projects/ar-interactive-cpg-packaging-noyah/</loc></url>
   <url><loc>https://virtualfudge.com/projects/ar-virtual-makeup-try-on-noyah/</loc></url>
   <url><loc>https://virtualfudge.com/projects/ar-cpg-ecommerce-noyah/</loc></url>

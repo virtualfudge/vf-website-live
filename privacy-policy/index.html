@@ -1,1 +1,419 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Privacy policy, Virtual Fudge</title><meta name="robots" content="noindex"><link rel="canonical" href="https://virtualfudge.com/"><script>(function () { var to = "/" + location.search + "#legal"; function go() { location.replace(to); } go(); setTimeout(go, 700); setTimeout(go, 2000); })();</script><meta http-equiv="refresh" content="3; url=/#legal"><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#FAF6EC;color:#1A0D05;font:17px/1.5 Georgia,serif}a{color:inherit}</style></head><body><p><a href="/#legal">Virtual Fudge: Privacy policy</a></p></body></html>
+<!doctype html><html lang="en" data-route="legal" data-home-title="Virtual Fudge – Immersion that Converts"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Privacy policy, Virtual Fudge</title><meta name="description" content="At Virtual Fudge, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains the types of information that are collected and recorded by Virtual Fudge and how we use them."><link rel="canonical" href="https://virtualfudge.com/privacy-policy/"><meta name="theme-color" content="#FAF6EC"><meta property="og:type" content="website"><meta property="og:site_name" content="Virtual Fudge"><meta property="og:url" content="https://virtualfudge.com/privacy-policy/"><meta property="og:title" content="Privacy policy"><meta property="og:description" content="At Virtual Fudge, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains the types of information that are collected and recorded by Virtual Fudge and how we use them."><meta property="og:image" content="https://virtualfudge.com/assets/share.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="The Virtual Fudge logo and a block of fudge: We create mind-bogglingly useful, non-gimmicky AR, MR and XR experiences."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@virtual_fudge"><link rel="icon" href="/assets/favicon-32.png" sizes="32x32"><link rel="icon" href="/assets/favicon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"></head><body><!-- warp: the transporter, the first moment of a visit (Vemir, 28 Oct: "a surreal immersive transporter a la Space Odyssey
+     as a loading screen, minimalist"). Light streams toward you on two walls with a dark slit between them, as in 2001's
+     Star Gate, while the block loads; then it floods to paper and the page is there. Drawn in CSS only, so it keeps moving
+     while the page's own code starts, with no graphics card too. Once per visit (per tab), whatever the computer's motion
+     setting (28 Oct: "work anyway agnostically"); never in high contrast or with ?test (?warp shows it anyway); a click, a tap or a key arrives at once. The password screen starts it and the page
+     carries it on from the same moment and the same streaks (tools/lock-site.py copies this block there). -->
+<style>
+/* the walls' own light, brass and caramel at the near edges, dark at the slit: painted once and never animated, so the only
+   things that move are the thin streaks and, at the end, three plain fades (cheap for any computer, with or without a
+   graphics card: Windows laptops on their built-in or no GPU included) */
+.warp { display: none; position: fixed; inset: 0; z-index: 100; overflow: hidden; contain: strict;
+  background: linear-gradient(90deg, rgba(181, 120, 42, .2), rgba(181, 120, 42, 0) 36%, rgba(199, 123, 107, 0) 64%, rgba(217, 163, 91, .17)), #0C0603; }
+.warp-on .warp { display: block; }
+.warp-fade .warp { animation: vf-warp-in .45s ease-out both; }
+/* the cap, kept by the browser's own animation thread: a phone busy reading the page (or a computer compiling the block)
+   can hold up the script that ends the journey, never this fade (Vemir, 28 Oct, on his phone: "goes way too long"). Opacity
+   alone, so the browser can run it off the page's thread (a visibility in the same keyframes kept it on the page's thread,
+   and a 5 s freeze held the dark for all 5 s); then a second, instant one takes it out of the way of clicks */
+.warp-on .warp { animation: vf-warp-cap .4s ease-in var(--cap, 3.1s) forwards, vf-warp-off 0s linear calc(var(--cap, 3.1s) + .4s) forwards; }
+.warp-on.warp-fade .warp { animation: vf-warp-in .45s ease-out both, vf-warp-cap .4s ease-in var(--cap, 3.1s) forwards, vf-warp-off 0s linear calc(var(--cap, 3.1s) + .4s) forwards; }
+.warp-field { position: absolute; inset: 0; }
+/* one streak: it starts at the slit, far away and faint, and speeds up and lengthens as it comes past */
+.warp-field i { position: absolute; left: 50%; top: 50%; width: var(--l); height: var(--h); margin-top: calc(var(--h) / -2); border-radius: var(--h); transform-origin: 0 50%; opacity: 0;
+  background: linear-gradient(90deg, rgba(var(--c), 0), rgba(var(--c), 1) 84%, rgba(var(--c), .4)); animation: vf-streak var(--d) cubic-bezier(.62, 0, .96, .6) var(--w) infinite; }
+.warp-glow, .warp-flash { position: absolute; inset: 0; opacity: 0; }
+.warp-glow { background: radial-gradient(closest-side, #FAF6EC, #FAF6EC 24%, rgba(245, 237, 216, .9) 42%, rgba(217, 163, 91, .45) 70%, rgba(181, 120, 42, 0)); transform: scale(.5); }
+.warp-flash { background: #FAF6EC; }
+/* the arrival: everything rushes past, the light at the end floods the screen, and the page is under it */
+.warp-out .warp-field { transform: scale(1.9); transition: transform .56s cubic-bezier(.55, 0, 1, .45); }
+.warp-out .warp-glow { opacity: 1; transform: scale(1.9); transition: opacity .16s ease-out, transform .5s cubic-bezier(.55, 0, .9, .55); }
+.warp-out .warp-flash { opacity: 1; transition: opacity .2s ease-in .32s; }   /* the even paper only once the light has filled the screen */
+.warp-gone .warp { background: none; pointer-events: none; }
+.warp-gone .warp-field, .warp-gone .warp-glow { visibility: hidden; }
+.warp-gone .warp-flash { opacity: 0; transition: opacity .5s ease; }
+/* a computer that gets the stills arrives in two thirds of the time */
+.warp-fast.warp-out .warp-field { transition-duration: .36s; }
+.warp-fast.warp-out .warp-glow { transition-duration: .1s, .32s; }
+.warp-fast.warp-out .warp-flash { transition-duration: .14s; transition-delay: .2s; }
+.warp-fast.warp-gone .warp-flash { transition-duration: .34s; }
+@keyframes vf-streak { 0% { opacity: 0; transform: rotate(var(--a)) translateX(var(--r0)) scaleX(.04); } 22% { opacity: var(--o); }
+  100% { opacity: var(--o); transform: rotate(var(--a)) translateX(var(--r1)) scaleX(1); } }
+@keyframes vf-warp-in { from { opacity: 0; } }
+@keyframes vf-warp-cap { to { opacity: 0; } }
+@keyframes vf-warp-off { to { visibility: hidden; } }
+@media (forced-colors: active) { .warp { display: none !important; } }   /* Windows high contrast: straight to the page */
+</style>
+<div class="warp" id="warp" aria-hidden="true"><div class="warp-field"></div><div class="warp-glow"></div><div class="warp-flash"></div></div>
+<script>
+(function () {
+  "use strict";
+  var d = document.documentElement, el = document.getElementById("warp"), field = el.firstChild, q = location.search;
+  var calm = !!(window.matchMedia && window.matchMedia("(forced-colors: active)").matches);   // high contrast repaints its colours
+  var t0 = 0, seed = 1, on = false, over = false, loaded = false, timer = 0, EV = ["pointerdown", "keydown", "wheel", "touchstart"];
+  function get(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } }
+  function put(k, v) { try { if (v === null) window.sessionStorage.removeItem(k); else window.sessionStorage.setItem(k, v); } catch (e) {} }
+  // the same seed draws the same streaks, so the page carries on the password screen's journey exactly
+  function rand(s) { return function () { s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function draw(lag) {
+    var r = rand(seed), W = window.innerWidth || 1280, H = window.innerHeight || 800, M = Math.max(W, H), n = Math.min(W, H) < 700 ? 72 : 96, out = "";
+    var top = Math.min(72, Math.max(54, Math.atan2(H, W) * 180 / Math.PI + 8));   // how steep a streak may run: taller screens, steeper
+    // paper, cream, brass, caramel, a dusty rose and VF's AR blue, in the shares they are drawn
+    var C = [["250, 246, 236", .2], ["245, 237, 216", .2], ["181, 120, 42", .26], ["217, 163, 91", .18], ["199, 123, 107", .08], ["55, 138, 221", .08]];
+    for (var i = 0; i < n; i++) {
+      var a = (r() * 2 - 1) * top, c = r(), k = 0; while (k < C.length - 1 && (c -= C[k][1]) > 0) k++;
+      var cs = Math.cos(a * Math.PI / 180), sn = Math.abs(Math.sin(a * Math.PI / 180));
+      var r0 = M * (.025 + r() * .07) / cs, edge = Math.min(W / 2 / cs, sn > .001 ? H / 2 / sn : 1e9);
+      var wide = r() < .1, h = wide ? 6 + r() * 10 : r() < .2 ? 2 : 1, o = wide ? .06 + r() * .09 : .25 + r() * .6;
+      var dur = .55 + r() * .8, len = M * (.12 + r() * r() * .45);
+      out += '<i style="--a:' + (i % 2 ? 180 + a : a).toFixed(2) + "deg;--r0:" + r0.toFixed(1) + "px;--r1:" + (edge * 1.04).toFixed(1) + "px;--l:" + len.toFixed(1) +
+        "px;--h:" + h.toFixed(1) + "px;--o:" + o.toFixed(2) + ";--c:" + C[k][0] + ";--d:" + dur.toFixed(3) + "s;--w:" + (r() * .35 - lag).toFixed(3) + 's"></i>';
+    }
+    field.innerHTML = out;
+  }
+  // each streak leaves the slit in the first third of a second; a page carrying the journey on starts them that far along
+  function begin(lag) { on = true; draw(lag); el.style.setProperty("--cap", Math.max(0.2, 3.1 - lag).toFixed(2) + "s"); d.classList.add("warp-on"); }
+  function arrive(fast) {
+    if (!on || over) return; over = true; clearInterval(timer);
+    EV.forEach(function (e) { window.removeEventListener(e, skip, true); });
+    d.classList.remove("warp-fade"); if (fast) d.classList.add("warp-fast"); d.classList.add("warp-out");
+    setTimeout(function () { d.classList.add("warp-gone"); }, fast ? 340 : 520);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); d.classList.remove("warp-on", "warp-out", "warp-gone", "warp-fast"); }, fast ? 700 : 1050);
+  }
+  function skip() { if (Date.now() - t0 > 300) arrive(); }
+  // the page is there when the block has drawn its first frame, and what the first screen shows is in: the fonts, and any
+  // picture actually on that screen (on a phone's data the whole page's pictures, further down, kept it waiting to its limit:
+  // Vemir, 28 Oct, "on my phone the transporter goes way too long"); never sooner than 0.7 seconds into the journey, never
+  // later than 2.6 (Vemir, 28 Oct: "a short transporter animation"), so a quick computer is on the page in about 1.7 s all
+  // told. A computer that gets the stills (no graphics card, or one too weak for the block: many a Windows laptop) is a slow
+  // one, so it gets its page, every picture in, as soon as that's known, from 0.45, and arrives in two thirds of the time
+  function seen(n) {
+    for (; n && n.nodeType === 1; n = n.parentNode) { var s = window.getComputedStyle(n); if (s.display === "none" || s.visibility === "hidden" || +s.opacity < 0.05) return false; }
+    return true;
+  }
+  function firstScreen() {
+    var f = document.fonts, busy = false, any = false, pf = false, im = document.images, W = window.innerWidth, H = window.innerHeight;
+    if (f && f.forEach) f.forEach(function (x) { if (x.status === "loading") busy = true; if (/Playfair/.test(x.family)) { any = true; if (x.status === "loaded") pf = true; } });
+    if (busy || (any && !pf)) return false;
+    for (var i = 0; i < im.length; i++) {
+      if (im[i].complete) continue;
+      var r = im[i].getBoundingClientRect();
+      if (r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < H && r.right > 0 && r.left < W && seen(im[i])) return false;
+    }
+    return true;
+  }
+  function check() {
+    var t = Date.now() - t0, cl = d.classList, still = cl.contains("no-gl");
+    if (t > 2600 || (t > 700 && (cl.contains("ready") || cl.contains("page-plain")) && (loaded || firstScreen())) || (loaded && t > 450 && still)) arrive(still);
+  }
+  // on the password screen (its own html is marked; the page written in its place is not): it starts when the password
+  // opens the page (or a remembered key is about to), and stops if not
+  if (d.hasAttribute("data-lock")) {
+    window.VFWarp = {
+      start: function (fade) {
+        if (on) return true;
+        if (calm || get("vf-warp")) return false;
+        t0 = Date.now(); seed = Math.floor(Math.random() * 2147483646) + 1; put("vf-warp", "1"); put("vf-warp-t0", t0 + ":" + seed);
+        if (fade) d.classList.add("warp-fade");
+        begin(0); el.style.setProperty("--cap", "6s"); return true;   // the screen itself is light: its cap only for a decrypt that hangs
+      },
+      stop: function () { on = false; d.classList.remove("warp-on", "warp-fade"); field.innerHTML = ""; put("vf-warp", null); put("vf-warp-t0", null); }
+    };
+    return;
+  }
+  var hand = /^(\d+):(\d+)$/.exec(get("vf-warp-t0") || ""), now = Date.now(); put("vf-warp-t0", null);
+  if (hand && now >= +hand[1] && now - hand[1] < 15000) { t0 = +hand[1]; seed = +hand[2]; }
+  else if (!calm && (/[?&]warp\b/.test(q) || (!/[?&]test\b/.test(q) && !get("vf-warp")))) { t0 = now; seed = Math.floor(Math.random() * 2147483646) + 1; put("vf-warp", "1"); }
+  else { el.parentNode.removeChild(el); return; }
+  begin((now - t0) / 1000);
+  EV.forEach(function (e) { window.addEventListener(e, skip, { capture: true, passive: true }); });
+  window.addEventListener("load", function () { loaded = true; check(); });
+  timer = setInterval(check, 100);
+})();
+</script>
+<!-- /warp -->
+<!-- the two faces live with the site (Google Fonts' own files, 4 Nov 2026): no request leaves virtualfudge.com to set the type,
+     so it shows the same on every network, firewall and privacy setting. Set here, not in block.css, because the locked
+     copy inlines block.css into the page, which would shift a stylesheet-relative path. -->
+<link rel="preload" href="/assets/fonts/playfair-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/dm-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/dm-mono-400-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/dm-mono-400-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/assets/fonts/dm-mono-500-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/assets/fonts/dm-mono-500-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Playfair"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("/assets/fonts/playfair-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Playfair"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("/assets/fonts/playfair-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+/* Until Playfair arrives, Georgia (Apple, Windows) or Times New Roman stands in, scaled to Playfair's width and height so the
+   lines wrap the same and nothing moves when it swaps in (6 Nov: the phone headline went from four lines to three, a 0.10 shift). */
+@font-face { font-family: "Playfair fallback"; src: local("Georgia"); size-adjust: 90.6%; ascent-override: 98.2%; descent-override: 34.2%; line-gap-override: 0%; }
+@font-face { font-family: "Playfair fallback 2"; src: local("Times New Roman"), local("TimesNewRomanPSMT"); size-adjust: 99%; ascent-override: 89.9%; descent-override: 31.3%; line-gap-override: 0%; }
+</style>
+<link rel="stylesheet" href="/assets/block.css?v=99b92787bb">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Virtual Fudge", "url": "https://virtualfudge.com/", "email": "hi@virtualfudge.com", "telephone": "+1-646-470-9997", "slogan": "Immersion that Converts", "address": {"@type": "PostalAddress", "streetAddress": "315 W. 57th St, Suite 308", "addressLocality": "New York", "addressRegion": "NY", "postalCode": "10019", "addressCountry": "US"}, "sameAs": ["https://www.linkedin.com/company/virtualfudge", "https://www.instagram.com/virtual_fudge/", "https://www.tiktok.com/@virtualfudge", "https://www.youtube.com/@VirtualFudge", "https://x.com/virtual_fudge", "https://www.threads.net/@virtual_fudge", "https://www.facebook.com/virtualfudge"]}</script>
+
+<a class="skip" href="#retail">Skip to the chapters</a>
+
+<header class="top">
+  <a class="mark" href="#top" aria-label="Virtual Fudge, back to the top"><span class="mark-logo" data-logo></span></a>
+  <div class="top-acts">
+    <nav class="top-nav" aria-label="Main">
+      <a class="top-link" href="#industries" data-nav="industries">Industries</a>
+      <a class="top-link" href="#work" data-nav="work">Projects</a>
+      <a class="top-link" href="#shows" data-nav="shows">Events</a>
+      <a class="top-link" href="#studio" data-nav="studio">About us</a>
+      <a class="top-link" href="#blog" data-nav="blog">Blog</a>
+      <a class="top-link" href="#contact" data-nav="contact">Contact</a>
+    </nav>
+    <a class="book" href="#start">Get a quote</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </div>
+</header>
+
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <div class="menu-in">
+    <div class="menu-top">
+      <a class="mark" href="#top" aria-label="Virtual Fudge, back to the top"><span class="mark-logo" data-logo></span></a>
+      <button class="menu-close" type="button">Close</button>
+    </div>
+    <nav class="menu-main" aria-label="Pages">
+      <a href="#top" data-nav="home">Home</a>
+      <a href="#industries" data-nav="industries">Industries</a>
+      <a href="#work" data-nav="work">Projects</a>
+      <a href="#shows" data-nav="shows">Events</a>
+      <a href="#studio" data-nav="studio">About us</a>
+      <a href="#blog" data-nav="blog">Blog</a>
+      <a href="#contact" data-nav="contact">Contact</a>
+      <a href="#start" data-nav="start">Get a quote</a>
+      <a href="#careers" data-nav="careers">Careers</a>
+    </nav>
+    <nav class="menu-ind" aria-label="Industries">
+      <a href="#for-retail">Retail</a><a href="#for-cpg">CPG</a><a href="#for-medicine">Healthcare</a><a href="#for-sports">Sports</a>
+      <a href="#for-events">Marketing</a><a href="#for-museums">Museums</a><a href="#for-training">Training</a>
+      <a href="#for-tourism">Tourism</a><a href="#for-gaming">Gaming</a><a href="#for-entertainment">Entertainment</a><a href="#for-realestate">Real estate</a>
+      <a href="#for-manufacturing">Manufacturing</a><a href="#for-education">Education</a>
+    </nav>
+    <div class="menu-contact">
+      <a class="book" href="https://calendar.app.google/aTmHkh5B71PkiYVe7" target="_blank" rel="noopener">Book a call<span class="sr"> (opens in a new tab)</span></a>
+      <a class="link" href="mailto:hi@virtualfudge.com">hi@virtualfudge.com</a>
+      <a class="link" href="tel:+16464709997">+1 646 470 9997</a>
+    </div>
+  </div>
+</div>
+
+<canvas id="stage" tabindex="0" aria-label="The fudge block. Press and hold Space, or press and hold on it, to make it real."></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<nav class="index" aria-label="Chapters">
+  <a href="#retail" data-i="1" aria-label="I. Virtual Try-On"></a>
+  <a href="#cpg" data-i="2" aria-label="II. Interactive Packaging"></a>
+  <a href="#medicine" data-i="3" aria-label="III. Medical Education"></a>
+  <a href="#sports" data-i="4" aria-label="IV. Fan Engagement"></a>
+  <a href="#events" data-i="5" aria-label="V. Brand Activations"></a>
+  <a href="#museums" data-i="6" aria-label="VI. Living Exhibits"></a>
+  <a href="#training" data-i="7" aria-label="VII. Workforce Training"></a>
+</nav>
+
+<p class="lost" id="lost" role="status" hidden>This slice went missing. The rest of the block is still here.</p>
+
+<main id="main">
+
+  <section class="beat prologue" id="top" data-beat="0">
+    <img class="still" src="/assets/stills/top.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h1 class="display">We create <span class="nw">mind-bogglingly</span> useful, <span class="nw">non-gimmicky</span> AR, MR&nbsp;&amp;&nbsp;XR experiences</h1>
+      <p class="plain">Every world starts as a block of fudge. Scroll down and watch this one turn into&nbsp;seven.</p>
+      <div class="acts prologue-acts"><a class="book" href="#retail">Let’s scroll</a><button type="button" class="reel-btn" data-reel><span class="reel-play" aria-hidden="true"></span>Watch the reel<span class="reel-len">1:44</span></button></div>
+      <p class="sr">A cube of fudge, lit in warm brass light, its top slice lifted slightly.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="retail" data-beat="1" aria-labelledby="h-retail">
+    <img class="still" src="/assets/stills/retail.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-retail" tabindex="-1"><span class="num" aria-hidden="true">I</span><span class="ch-name"><span class="sr">I. </span>Virtual Try-On</span></h2>
+      <p class="verse">Foot traffic is priceless.
+Point a phone at the window:
+try the lipstick on your own face,
+drop the sofa into your living room,
+and buy it knowing it fits.</p>
+      <p class="plain"><a href="#for-retail">Try-ons and 3D products that answer “will it fit?” before the fitting room does (and long before the returns desk).</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube unfolds into store shelving; one product lifts forward and turns.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="cpg" data-beat="2" aria-labelledby="h-cpg">
+    <img class="still" src="/assets/stills/cpg.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-cpg" tabindex="-1"><span class="num" aria-hidden="true">II</span><span class="ch-name"><span class="sr">II. </span>Interactive Packaging</span></h2>
+      <p class="verse">Shoppers want to try before they buy.
+Scan the box, and it comes alive:
+a story blooming out of the lid,
+the ingredients in 3D,
+and checkout one tap away.</p>
+      <p class="plain"><a href="#for-cpg">Packaging that talks back: one scan opens the brand’s story, the ingredients and the checkout.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes a carton; its lid opens and a small scene builds itself above it.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="medicine" data-beat="3" aria-labelledby="h-medicine">
+    <img class="still" src="/assets/stills/medicine.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-medicine" tabindex="-1"><span class="num" aria-hidden="true">III</span><span class="ch-name"><span class="sr">III. </span>Medical Education</span></h2>
+      <p class="verse">Healthcare doesn’t need hype;
+it needs clarity you can trust.
+AR steps laid over the device,
+a simulated patient to practice on,
+and details we never fudge.</p>
+      <p class="plain"><a href="#for-medicine">Clinical simulation, device training and bedside AR guides, built with your clinicians.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes a stylized beating heart; a scanning plane shows a cross-section.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="sports" data-beat="4" aria-labelledby="h-sports">
+    <img class="still" src="/assets/stills/sports.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-sports" tabindex="-1"><span class="num" aria-hidden="true">IV</span><span class="ch-name"><span class="sr">IV. </span>Fan Engagement</span></h2>
+      <p class="verse">Stadiums are loud.
+Your brand should be louder.
+Live stats floating over the field,
+a 3D view from your seat before you buy,
+and an AR hunt that ends in high fives.</p>
+      <p class="plain"><a href="#for-sports">Seat-view previews, second-screen stats, citywide AR hunts and sponsor mini-games, all tracked to tickets and merch. Game day, every day.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes a stadium bowl of tiny fans; a wave travels around it.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="events" data-beat="5" aria-labelledby="h-events">
+    <img class="still" src="/assets/stills/events.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-events" tabindex="-1"><span class="num" aria-hidden="true">V</span><span class="ch-name"><span class="sr">V. </span>Brand Activations</span></h2>
+      <p class="verse">Marketing has never been noisier,
+or harder to break through.
+So don’t shout. Let them play:
+an AR mirror that previews the result,
+a business card with a talking hologram.</p>
+      <p class="plain"><a href="#for-events">Booth-stoppers like our Magic Mirror and the Living Hologram: people play and share, and every scan can become a lead.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes a booth floor; drifting figures gather toward it and form a line.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="museums" data-beat="6" aria-labelledby="h-museums">
+    <img class="still" src="/assets/stills/museums.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-museums" tabindex="-1"><span class="num" aria-hidden="true">VI</span><span class="ch-name"><span class="sr">VI. </span>Living Exhibits</span></h2>
+      <p class="verse">The “do not touch” era is over.
+Point a phone at the marble
+and the paint comes back.
+Point it at the bones
+and the dinosaur walks again.</p>
+      <p class="plain"><a href="#for-museums">AR guides, multilingual docents and living exhibits that bring the archive out of storage, and tell you which stories keep visitors longest.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes a classical torso with missing pieces, which restore in brass and then in color.</p>
+    </div>
+  </section>
+
+  <section class="beat" id="training" data-beat="7" aria-labelledby="h-training">
+    <img class="still" src="/assets/stills/training.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="ch" id="h-training" tabindex="-1"><span class="num" aria-hidden="true">VII</span><span class="ch-name"><span class="sr">VII. </span>Workforce Training</span></h2>
+      <p class="verse">Let’s be honest: manuals are outdated.
+(Nobody read them anyway.)
+So we put AR steps on the machine,
+right where the hands are,
+until guessing turns into knowing.</p>
+      <p class="plain"><a href="#for-training">Step-by-step AR instructions right on the equipment for onboarding, assembly and maintenance, with every completed step logged for the audit.</a></p>
+      <p class="hint">Press and hold.</p>
+      <p class="sr">The cube becomes an exploded product assembly that puts itself together one part at a time.</p>
+    </div>
+  </section>
+
+  <section class="beat finale" id="yours" data-beat="8" aria-labelledby="h-yours">
+    <img class="still" src="/assets/stills/yours.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">
+    <div class="col">
+      <h2 class="display" id="h-yours" tabindex="-1">Seven wonders.<br>Yours might be the&nbsp;eighth.</h2>
+      <p class="plain finale-plain">We’re industry-agnostic: if you dream it, we can do&nbsp;it.</p>
+      <form class="sketch-form" id="sketch-form" novalidate>
+        <label for="sketch-in">Tell us briefly what you want, and we’ll cut you a sketch.</label>
+        <div class="field">
+          <input id="sketch-in" name="sketch" type="text" maxlength="140" autocomplete="off" placeholder="An AR menu for a rooftop bar">
+          <button type="submit" id="sketch-go">Cut me a sketch</button>
+        </div>
+      </form>
+      <div class="sketch" id="sketch" hidden>
+        <p class="sketch-title" id="sketch-title"></p>
+        <p class="verse" id="sketch-verse" aria-live="polite"></p>
+        <div class="acts">
+          <a class="book" data-book href="https://calendar.app.google/aTmHkh5B71PkiYVe7" target="_blank" rel="noopener">Bring this to a call<span class="sr"> (opens in a new tab)</span></a>
+          <button type="button" class="link" id="copy-link">Copy link</button>
+        </div>
+        <p class="copied" id="copied" role="status"></p>
+        <input class="share-url" id="share-url" type="text" readonly hidden aria-label="Link to this sketch">
+      </div>
+      <p class="sr">The pieces return to a cube, then become the sketch you describe.</p>
+    </div>
+  </section>
+</main>
+
+<div id="page" class="page" hidden><article><h1>Privacy policy</h1><p>At Virtual Fudge, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains the types of information that are collected and recorded by Virtual Fudge and how we use them.</p><p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to <a class="link" href="/contact/">contact us</a>.</p><h2>Log files</h2><p>Virtual Fudge follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this as part of hosting services’ analytics. The information collected by log files includes internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable. The purpose of the information is for analyzing trends, administering the site, tracking users’ movement on the website, and gathering demographic information.</p><h2>Cookies and web beacons</h2><p>Like any other website, Virtual Fudge uses “cookies.” These cookies are used to store information including visitors’ preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users’ experience by customizing our web page content based on visitors’ browser type and/or other information.</p><h2>Privacy policies</h2><p>The Noyah Cosmetics AR app respects your privacy.</p><p>We only collect the same basic information as a standard online purchase: your login and order history. You can find our full privacy policy on this page. Any additional data used by the AR features (like the virtual try-on) stays on your device. We don’t collect or share it. For example, the Noyah Cosmetics AR app uses a selfie AR feature using ARKit and ARCore true-depth technology to recognize users’ face data so users can try cosmetics on their face in real time, then capture a selfie to share or save for later.</p><p>This information is not transmitted or stored by us.</p><h2>Third-party privacy policies</h2><p>Virtual Fudge’s Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt out of certain options.</p><p>Third-party websites, ad servers, or ad networks use technologies like cookies, JavaScript, or web beacons that are used in their respective advertisements and links that appear on Virtual Fudge, which are sent directly to users’ browsers. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.</p><p>You can choose to disable cookies through your individual browser options. More detailed information about cookie management with specific web browsers can be found at the browsers’ respective websites.</p><p>Note that Virtual Fudge has no access to or control over cookies that are used by third-party advertisers.</p><h2>Children’s information</h2><p>Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.</p><p>Virtual Fudge does not knowingly collect any Personally Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately, and we will do our best to promptly remove such information from our records.</p><h2>Online privacy policy only</h2><p>This Privacy Policy applies only to our online activities and is valid for visitors to our website with regard to the information that they shared and/or collect in Virtual Fudge. This policy is not applicable to any information collected offline or via channels other than this website.</p><h2>Consent</h2><p>By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.</p><h2>Cut me a sketch</h2><p>If you use “Cut me a sketch,” the line you type is sent to Claude, Anthropic’s AI model, so it can write the sketch. A sketch link carries the sketch in the link itself; nothing is saved on a server.</p></article></div>
+
+<footer class="foot">
+  <nav class="sitemap" aria-label="Site">
+    <ul>
+      <li><a href="#top">Home</a></li>
+      <li><a href="#industries">Industries</a></li>
+      <li><a href="#work">Projects</a></li>
+      <li><a href="#shows">Events</a></li>
+      <li><a href="#studio">About us</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#start">Get a quote</a></li>
+      <li><a href="#careers">Careers</a></li>
+      <li><a href="#legal">Privacy policy</a></li>
+    </ul>
+    <ul aria-label="Industries">
+      <li><a href="#for-retail">Retail</a></li>
+      <li><a href="#for-cpg">CPG</a></li>
+      <li><a href="#for-medicine">Healthcare</a></li>
+      <li><a href="#for-sports">Sports</a></li>
+      <li><a href="#for-events">Marketing</a></li>
+      <li><a href="#for-museums">Museums</a></li>
+      <li><a href="#for-training">Training</a></li>
+      <li><a href="#for-tourism">Tourism</a></li>
+      <li><a href="#for-gaming">Gaming</a></li>
+      <li><a href="#for-entertainment">Entertainment</a></li>
+      <li><a href="#for-realestate">Real estate</a></li>
+      <li><a href="#for-manufacturing">Manufacturing</a></li>
+      <li><a href="#for-education">Education</a></li>
+    </ul>
+    <address>315 W. 57th St, Ste 308<br>New York, NY 10019<br><a href="mailto:hi@virtualfudge.com">hi@virtualfudge.com</a><br><a href="tel:+16464709997">+1 646 470 9997</a></address>
+  </nav>
+  <form class="foot-news news-form" novalidate>
+    <label for="news-foot">Subscribe to our email newsletter</label>
+    <div class="news-field"><input id="news-foot" type="email" name="email" placeholder="Email address" autocomplete="email" required><button type="submit" class="book">Subscribe</button></div>
+    <p class="news-status" role="status"></p>
+  </form>
+  <div class="foot-logo">
+    <div class="logo-toy" id="logo-toy" tabindex="0" role="img" aria-label="The Virtual Fudge logo. Drag it to stretch it, and it springs back. Press Enter to give it a poke.">
+      <span class="logo-toy-svg"></span>
+    </div>
+    <p class="logo-toy-hint" aria-hidden="true">Grab the logo and pull.</p>
+  </div>
+  <ul class="foot-social" aria-label="Virtual Fudge elsewhere"><li><a href="https://www.linkedin.com/company/virtualfudge" target="_blank" rel="noopener">LinkedIn<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://www.instagram.com/virtual_fudge/" target="_blank" rel="noopener">Instagram<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://www.tiktok.com/@virtualfudge" target="_blank" rel="noopener">TikTok<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://www.youtube.com/@VirtualFudge" target="_blank" rel="noopener">YouTube<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://x.com/virtual_fudge" target="_blank" rel="noopener">X<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://www.threads.net/@virtual_fudge" target="_blank" rel="noopener">Threads<span class="sr"> (opens in a new tab)</span></a></li><li><a href="https://www.facebook.com/virtualfudge" target="_blank" rel="noopener">Facebook<span class="sr"> (opens in a new tab)</span></a></li></ul>
+  <p class="foot-tag">Immersion that Converts</p>
+  <p>&copy; 2026 Virtual Fudge – Bespoke Augmented Reality Studio Based in New York City</p>
+</footer>
+
+<script src="/assets/logo.js?v=1836380ed0"></script>
+<script src="/assets/block-shader.js?v=60012ac8f7"></script>
+<script src="/assets/vf-copy.js?v=a844c954ba"></script>
+<script src="/assets/blog.js?v=c0c00d22d6"></script>
+<script src="/assets/site.js?v=cd18b3f46e"></script>
+<script src="/assets/block.js?v=b8a1fae2e4"></script>
+<script src="/assets/logo-toy.js?v=cf5cca773b"></script>
+</body></html>
