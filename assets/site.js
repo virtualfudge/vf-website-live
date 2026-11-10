@@ -858,9 +858,9 @@
       document.querySelectorAll(".vf-tab").forEach(function (b) { b.setAttribute("aria-pressed", String(b === tab)); });
       document.querySelectorAll(".vf-form").forEach(function (f) { f.hidden = f.id !== "form-" + tab.getAttribute("data-form"); });
       // the address and the tab's title follow the choice, so a copied link opens the form on screen (no re-render)
-      var want = tab.getAttribute("data-form") === "careers" ? "careers" : "start", cur = (location.hash || "").replace(/^#/, "");
+      var want = tab.getAttribute("data-form") === "careers" ? "careers" : "start", cur = asked();
       if ((cur === "start" || cur === "careers") && cur !== want) {
-        history.replaceState(null, "", "#" + want);
+        history.replaceState(null, "", PATHS[want] || "#" + want); seen = location.href;
         document.title = route(want).title + ", Virtual Fudge";
         var top = START_TOP[want], h1 = $("#page h1"), lede = $("#page .page-hero .plain"), acts = $("#page .page-hero .acts");   // the page's top follows too
         if (h1) h1.textContent = top[0]; if (lede) lede.textContent = top[1]; if (acts) acts.innerHTML = top[2];
@@ -1236,7 +1236,32 @@
   // page is the part after the # as before, and the # links, once followed from such a page, lead back onto the homepage's.
   var landPath = location.pathname, landRoute = root.getAttribute("data-route") || "", landTitle = document.title;
   var baseTitle = root.getAttribute("data-home-title") || document.title;
-  function asked() { return (location.hash || "").replace(/^#/, "") || (location.pathname === landPath ? landRoute : ""); }
+  // the published site (tools/build-public.py) also names every real address in <html data-paths> ({"for-retail":
+  // "/industries/ar-in-retail/", ...}), so the site's own links, the address bar and Back and Forward use those addresses
+  // instead of a # (SEO step 3, 9 Nov); a shared link is then the real page. Without it (the working copy) the # stays.
+  var PATHS = {}, ROUTE_AT = {};
+  try { PATHS = JSON.parse(root.getAttribute("data-paths") || "{}") || {}; } catch (e) { PATHS = {}; }
+  Object.keys(PATHS).forEach(function (r) { ROUTE_AT[PATHS[r]] = r; });
+  var REAL_ON = Object.keys(PATHS).length > 0;
+  function asked() { return (location.hash || "").replace(/^#/, "") || ROUTE_AT[location.pathname] || (location.pathname === landPath ? landRoute : ""); }
+  // a link to a page with its own address points there (copy link, open in a new tab, a crawler all get the real one)
+  function realLinks(scope) {
+    if (!REAL_ON || !scope) return;
+    [].forEach.call(scope.querySelectorAll('a[href^="#"]'), function (a) { var r = a.getAttribute("href").slice(1); if (PATHS[r]) a.setAttribute("href", PATHS[r]); });
+  }
+  // an old # address (a link shared before, the block's own jump to an industry) settles on the real one, in place
+  function settle(h) {
+    if (!REAL_ON || !location.hash) return;
+    var to = PATHS[h] ? PATHS[h] + location.search : location.pathname !== "/" ? "/" + location.search + location.hash : "";
+    if (to) { history.replaceState(history.state, "", to); seen = location.href; }
+  }
+  // one title per page, however it was reached: an industry, project or post with its own address is titled by its heading,
+  // as tools/build-public.py titles that page ("AR in CPG: Packaging that tells the story, Virtual Fudge"); hubs and the
+  // rest keep the site's short name ("Events, Virtual Fudge")
+  function pageTitle(h, r) {
+    var h1 = /^(for|work|blog)-/.test(h) && $("h1", pages), t = h1 ? h1.textContent.replace(/\u00ad/g, "").replace(/[ \t\r\n]+/g, " ").replace(/^ | $/g, "") : "";   // a title's deliberate no-break space stays
+    return (t || r.title) + ", Virtual Fudge";
+  }
   var lostTimer = 0;
   // the skip link: on the homepage it jumps to the chapters; on a page it moves to that page's heading, never off the page
   var skip = $(".skip"), skipHome = skip ? skip.textContent : "";
@@ -1247,6 +1272,7 @@
   });
   function go(first) {
     var h = asked();
+    settle(h);
     var r = route(h), lost = $("#lost");
     // the header and the menu mark the section you are in
     var sec = h.indexOf("work") === 0 ? "work" : h === "industries" || h.indexOf("for-") === 0 ? "industries" : h === "journal" || h.indexOf("blog") === 0 ? "blog" : ["shows", "studio", "contact", "start", "careers"].indexOf(h) > -1 ? h : r ? "" : "home";
@@ -1256,6 +1282,7 @@
       unwireClips(pages);
       pages.innerHTML = r.html();
       keepHyphens(pages);
+      realLinks(pages);
       wireClips(pages);
       // without the live block (no WebGL, or a stills copy), the page's world stands in its hero as a still
       if (r.stage && root.classList.contains("no-gl")) {
@@ -1266,7 +1293,7 @@
       if (skip) skip.textContent = "Skip to the content";
       wireGalleries(pages);
       wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages);
-      document.title = h === landRoute && location.pathname === landPath ? landTitle : r.title + ", Virtual Fudge";
+      document.title = h === landRoute && location.pathname === landPath ? landTitle : pageTitle(h, r);
       if (window.VFStage) window.VFStage.page(r.stage || false);
       window.scrollTo({ top: 0, behavior: "instant" });
       if (!first) { var h1 = $("h1", pages); if (h1) h1.focus({ preventScroll: true }); }
@@ -1293,13 +1320,22 @@
   function moved() { if (location.href === seen) return; seen = location.href; closeMenu(false); go(false); }
   window.addEventListener("hashchange", moved);
   window.addEventListener("popstate", moved);   // Back and Forward between a page's own address and the homepage's #
-  // on a page with its own address, a # link (#work, #blog-...) opens that page on the homepage's address, without a reload
+  // a link inside the site opens its page without a reload: at the page's real address where it has one; otherwise on the
+  // homepage's # (on the homepage itself the browser's own # jump does that, as it always has)
   document.addEventListener("click", function (e) {
-    if (location.pathname === "/" || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || a.target) return;
-    var href = a.getAttribute("href"); if (href.length < 2) return;
-    e.preventDefault(); history.pushState(null, "", "/" + href); moved();
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest && e.target.closest("a[href]"); if (!a || a.target || a.hasAttribute("download")) return;
+    var href = a.getAttribute("href"), r = "";
+    if (href.charAt(0) === "#") r = href.slice(1);
+    else if (a.origin === location.origin && !a.search) r = a.pathname === "/" ? a.hash.slice(1) : a.hash ? "" : ROUTE_AT[a.pathname] || "";
+    if (!r) return;
+    var to = PATHS[r] || (location.pathname === "/" ? "" : "/#" + r);
+    if (!to) return;
+    e.preventDefault(); closeMenu(false);
+    if (to !== location.pathname + location.hash) history.pushState(null, "", to);
+    moved();
   });
+  realLinks(document);
   // the menu (narrower screens): the whole site, one tap away; Escape or Close returns to the page
   var menu = $("#menu"), menuBtn = $(".menu-btn");
   function openMenu() {
