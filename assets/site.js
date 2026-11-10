@@ -541,9 +541,19 @@
   function nw(t) { return '<span class="nw">' + t + "</span>"; }
   function readTime(p) { return nw(p.minutes + " min read"); }
   function postMeta(p) { return esc(p.category) + ", " + nw(day(p.date)) + ", " + readTime(p); }
+  // A card crops its cover to 3:2, so the picture is drawn 1.58 times the card's width (mostly 450 to 710 css px), the
+  // lead card up to 1013: covers wider than 1080 px offer the 640 and 1080 px copies tools/make-blog-cards.sh
+  // makes, and the sizes below (measured 10 Nov 2026 from 320 to 2560 px windows) let the browser take the smallest sharp one.
+  function cardSrcset(p, lead) {
+    if (p.hero[1] <= 1080) return "";
+    var b = p.hero[0].replace(/^\/assets\/blog\//, "/assets/blog/card/").replace(/\.jpg$/, "");
+    return '" srcset="' + b + "-640.jpg 640w, " + b + "-1080.jpg 1080w, " + p.hero[0] + " " + p.hero[1] + 'w" sizes="' +
+      (lead ? "(max-width: 1099px) 93vw, (max-width: 1299px) 54vw, (max-width: 1599px) 685px, 815px"
+            : "(max-width: 640px) 146vw, (max-width: 1099px) 71vw, (max-width: 1299px) 46vw, (max-width: 1599px) 590px, 705px");
+  }
   function postCard(p, lead) {
     return '<li class="post-card' + (lead ? " lead-post" : "") + '"><a href="#blog-' + p.slug + '">' +
-      (p.hero ? '<span class="post-pic"><img src="' + p.hero[0] + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="" loading="' + (lead ? "eager" : "lazy") + '" decoding="async"></span>' : "") +
+      (p.hero ? '<span class="post-pic"><img src="' + p.hero[0] + cardSrcset(p, lead) + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="" loading="' + (lead ? "eager" : "lazy") + '" decoding="async"></span>' : "") +
       '<span class="post-text"><span class="post-meta">' + postMeta(p) + '</span><span class="post-title">' + esc(p.title) + '</span><span class="post-line">' + esc(p.desc) + "</span></span></a></li>";
   }
   function pageJournal() {
