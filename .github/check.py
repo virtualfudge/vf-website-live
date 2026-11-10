@@ -1,7 +1,8 @@
 """The live site's check (GitHub Actions, every 30 minutes; .github/workflows/site-check.yml in vf-website-live).
 
-Reads the site's address from the CNAME file beside it, so it follows the launch on its own. While the site is behind its
-password it checks that the password screen loads; once public, that the page and its code arrive, the page starts (the live
+It checks the live site, https://virtualfudge.com/ (10 Nov 2026: it used to read the CNAME beside it, which is the old
+password preview virtualfudgehq.com, so the live site went unwatched). If a page shows the password screen it checks that;
+otherwise that the page and its code arrive, the page starts (the live
 3D, or the stills where the runner has no graphics card) with no script error, the main pages open, a phone loads too, and an
 old virtualfudge.com address lands where it should. Any failure fails the run, and GitHub emails whoever owns the check.
 Nothing is sent anywhere else; nothing is filled in or submitted.
@@ -10,7 +11,7 @@ import json, os, sys, time, urllib.request
 from playwright.sync_api import sync_playwright
 
 here = os.path.dirname(os.path.abspath(__file__))
-domain = open(os.path.join(here, "..", "CNAME")).read().strip()
+domain = "virtualfudge.com"   # the live site (Hostinger), not the preview this check's repo serves
 base = os.environ.get("CHECK_BASE") or "https://" + domain + "/"   # (CHECK_BASE: a local dry run of the public copy)
 problems, notes = [], []
 
@@ -63,9 +64,17 @@ with sync_playwright() as p:
                     h1 = pg.evaluate("(document.querySelector('#page h1') || {}).textContent || ''")
                     if not h1.strip(): problems.append("#" + route + ": no heading (the page didn't render)")
                 pg.evaluate("location.hash = ''"); time.sleep(0.5)
-                if domain == "virtualfudge.com" or os.environ.get("CHECK_BASE"):
-                    pg.goto(base + "industries/ar-in-retail/", wait_until="load", timeout=30000); time.sleep(2)
-                    if "#for-retail" not in pg.url: problems.append("the old address /industries/ar-in-retail/ ended at " + pg.url)
+                # a real page opens as itself (its own address and heading), and an old address forwards to its real page
+                pg.goto(base + "industries/ar-in-retail/", wait_until="domcontentloaded", timeout=30000); time.sleep(2)
+                h1 = pg.evaluate("(document.querySelector('#page h1') || {}).textContent || ''")
+                if "/industries/ar-in-retail/" not in pg.url or not h1.strip(): problems.append("the page /industries/ar-in-retail/ ended at " + pg.url + " with heading '" + h1.strip()[:60] + "'")
+                pg.goto(base + "about/", wait_until="domcontentloaded", timeout=30000); time.sleep(3)
+                if "/about-us/" not in pg.url: problems.append("the old address /about/ ended at " + pg.url + " (should be /about-us/)")
+                for path in ("story/", "sitemap.xml"):
+                    try:
+                        st, b2, s2 = fetch(base + path)
+                        if st != 200 or len(b2) < 500: problems.append("%s: %d, %d bytes" % (path, st, len(b2)))
+                    except Exception as e: problems.append("%s did not load: %s" % (path, e))
         if errs: problems.append(name + ": script errors: " + "; ".join(errs[:3]))
         if bad: problems.append(name + ": failed requests: " + "; ".join(bad[:5]))
         ctx.close()
