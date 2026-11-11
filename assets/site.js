@@ -559,7 +559,7 @@
   function pageJournal() {
     return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: '<a class="book" href="#start">Get a quote</a>' }) +
       '<div class="page-body"><section class="block-sec blog-sec" aria-label="Posts"><ul class="post-grid">' + BLOG.map(function (p, k) { return postCard(p, k === 0); }).join("") + "</ul></section>" +
-      newsSection() + closing() + "</div>";
+      closing() + "</div>";   // (the footer's newsletter form follows: the page's own was a second one, 10 Nov review)
   }
   // one post: VF's words as published, in this site's reading column; links out open in a new tab
   function block(b) {

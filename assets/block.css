@@ -133,6 +133,7 @@ main { position: relative; z-index: 5; pointer-events: none; }
 .sitemap a, .foot address a { color: var(--ink); text-decoration: none; }
 .sitemap a:hover, .foot address a:hover { text-decoration: underline; text-decoration-color: var(--brass); text-underline-offset: 5px; }
 .foot address { font-style: normal; line-height: 1.7; }
+@media (pointer: coarse) { .sitemap a, .foot address a { display: inline-block; padding: 5px 0; margin: -5px 0; } }   /* touch: each footer link's tap area is 32 px tall (was 22; WCAG asks 24), with no overlap and nothing moved (10 Nov review) */
 
 /* ---------- a chapter's plain line opens its page ---------- */
 .plain a { text-decoration: underline; text-decoration-color: rgba(181, 120, 42, .45); text-underline-offset: 5px; text-decoration-thickness: 1px; transition: text-decoration-color .2s ease, color .2s ease; }
