@@ -7,7 +7,7 @@ RewriteRule ^README\.txt$ - [R=404,L]
 RewriteCond %{HTTP_HOST} ^blog\. [NC]
 RewriteRule ^(agentic-commerce-ar|ar-customer-education|ar-product-packaging|augmented-reality-education|augmented-reality-retail-nrf-2026|benefits-ar-architecture|choosing-an-xr-agency|difference-ar-mr-vr-xr|fudge-ing-awesome|how-ar-can-help-create-engaging-product-demos|kpis-xr-marketing-campaign|small-ar-studio-advantages|top-ar-niches|virtual-try-ons-ar|xr-trends-a-glimpse-into-the-future)/?$ https://virtualfudge.com/blog/$1/ [L,R=301]
 RewriteCond %{HTTP_HOST} ^blog\. [NC]
-RewriteRule ^ https://virtualfudge.com/#blog [NE,L,R=301]
+RewriteRule ^ https://virtualfudge.com/blog/ [L,R=301]
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTPS} !=on

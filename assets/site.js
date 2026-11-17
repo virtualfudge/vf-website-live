@@ -235,7 +235,7 @@
     var c = e.cloneNode(true), sr = c.querySelector(".sr"); if (sr) sr.remove(); return c.textContent.trim();
   }
   function hero(opts) {
-    return '<section class="page-hero"><div class="col">' + (opts.num ? (opts.ch ? '<p class="ch"><span class="num" aria-hidden="true">' + opts.num + '</span><span class="ch-name">' + esc(opts.ch) + "</span></p>"
+    return '<section class="page-hero' + (opts.cls ? " " + opts.cls : "") + '"><div class="col">' + (opts.num ? (opts.ch ? '<p class="ch"><span class="num" aria-hidden="true">' + opts.num + '</span><span class="ch-name">' + esc(opts.ch) + "</span></p>"
       : '<p class="num" aria-hidden="true">' + opts.num + '</p>') : "") +
       '<h1 class="display" tabindex="-1">' + opts.title + "</h1>" + (opts.verse ? '<p class="verse">' + esc(opts.verse) + "</p>" : "") +
       (opts.lede ? '<p class="plain">' + opts.lede + "</p>" : "") + (opts.lede2 ? '<p class="plain">' + opts.lede2 + "</p>" : "") + '<div class="acts">' + (opts.acts || BOOK) + "</div></div></section>";
@@ -245,6 +245,14 @@
     if (!b || !b[0]) return "";
     if (/\bcall\b/i.test(b[0])) return '<a class="' + (cls || "book") + '" href="' + STUDIO.book + '" target="_blank" rel="noopener">' + esc(b[0]) + NEWTAB + "</a>";
     return '<a class="' + (cls || "book") + '" href="' + esc(b[1] || "#start") + '">' + esc(b[0]) + "</a>";
+  }
+  // a decision point (Josh, 11 Nov): VF's own button keeps its words, and the other way in stands beside it, so each one offers
+  // "Get a quote" (the form) on the left and "Book a call" (the calendar) on the right; a button to another page stays alone
+  var QUOTE = '<a class="book" href="#start">Get a quote</a>';
+  function pair(b) {
+    if (!b || !b[0]) return "";
+    if (/\bcall\b/i.test(b[0])) return QUOTE + btn(b);
+    return (b[1] || "#start") === "#start" ? btn(b) + BOOK : btn(b);
   }
   function paras(list, lead) { return (list || []).map(function (p, k) { return "<p" + (k || !lead ? "" : ' class="lead"') + ">" + esc(p) + "</p>"; }).join(""); }
   // VF's run-in heads ("Fewer Returns: …", "Manufacturing & Automotive: …") stay bold, as on its pages
@@ -272,6 +280,15 @@
     "gortana": [["gortana", "A printed card, a phone, and our founder steps out to say hi."]]
   };
   var CARD_STILL = { "nios-mirror": "mirror-live" };   // the picture that says it fastest, where that isn't the first clip
+  // a project's own top: its real clip, framed as AR sees it, in place of the 3D block (Josh, 11 Nov: "putting real media on
+  // project from the header"). The clip and its words are the project's own (CASE_FILM)
+  function heroClip(slug) {
+    var f = CASE_FILM[slug]; if (!f) return "";
+    var name = CARD_STILL[slug] || f[0][0], cap = f.filter(function (x) { return x[0] === name; })[0][1], k = CLIPS[name];
+    return '<figure class="ar-photo hero-clip"><div class="ar-photo-in"><figure class="clip ' + kindOf(k) + '"><div class="clip-frame" style="aspect-ratio:' + k[0] + " / " + k[1] + '">' +
+      clipVideo(name, cap) + "</div></figure>" + '<span class="finder-lock" aria-hidden="true"><span class="finder-scan"></span></span></div>' +
+      '<figcaption class="finder-read"><span class="finder-tag"><i></i>' + (k[2] === "phone" ? "AR capture" : "Filmed live") + '</span><span class="finder-name">' + esc(cap) + "</span></figcaption></figure>";
+  }
   function cards(slugs, heading, text) {
     if (!slugs.length) return "";
     return sec("<h2>" + heading + "</h2>" + (text ? '<p class="lead">' + esc(text) + "</p>" : "") + '<ul class="cards">' + slugs.map(function (s, k) {
@@ -301,7 +318,7 @@
       '<p class="finder-read" aria-hidden="true"><span class="finder-tag"><i></i>Tracking</span><span class="finder-name"></span></p></div>';
   }
   function pageWork() {
-    return hero({ title: "Projects", lede: "Oohs and ahhs, with a job to do. Here’s what we’ve built, and two you can try on your phone right now.", acts: REEL_BTN + '<a class="book" href="#start">Get a quote</a>' }).replace(/<\/section>$/, finder() + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-finder">') +
+    return hero({ title: "Projects", lede: "Oohs and ahhs, with a job to do. Here’s what we’ve built, and two you can try on your phone right now.", acts: QUOTE + BOOK + REEL_BTN }).replace(/<\/section>$/, finder() + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-finder">') +
       '<div class="page-body">' + cards(CASES.map(function (c) { return c.slug; }), esc(HOME.projects.title), HOME.projects.text) +
       liveSection(["hologram", "shade"], "Try it live", "Two of our builds are live right now. Point your phone at a code, or watch the recording right beside it.", true) +
       story() + closing() + "</div>";
@@ -314,7 +331,7 @@
     body += sec("<h2>" + esc(p.about.title) + "</h2>" + paras(p.about.text, true) + grid(p.about.items));
     if (p.features && p.features.items.length) body += sec("<h2>" + esc(p.features.title) + '</h2><div class="three">' + p.features.items.map(function (f) {
       var i = f.indexOf(": "); return i > 0 ? "<div><h3>" + esc(f.slice(0, i)) + "</h3><p>" + esc(f.slice(i + 2)) + "</p></div>" : "<div><p>" + esc(f) + "</p></div>"; }).join("") + "</div>");
-    if (p.banner && p.banner.title) body += sec("<h2>" + esc(p.banner.title) + "</h2>" + paras(p.banner.text, true) + '<div class="acts">' + btn(p.banner.btn) + "</div>", "tagline");
+    if (p.banner && p.banner.title) body += sec("<h2>" + esc(p.banner.title) + "</h2>" + paras(p.banner.text, true) + '<div class="acts">' + pair(p.banner.btn) + "</div>", "tagline");
     if (c.live) body += liveSection([c.live], "Try it live", "", false);
     if (p.results && p.results.title) {
       var rb = p.results.btn, to = /marketing/i.test(rb) ? "#for-events" : /CPG/.test(rb) ? "#for-cpg" : /retail/i.test(rb) ? "#for-retail" : "#industries";
@@ -330,7 +347,9 @@
     body += cards(others, (p.more && p.more.title) || "More projects", (p.more && p.more.text) || "");
     if (p.faq) body += faqHtml(p.faq);
     if (c.note) body += sec('<p class="note">' + esc(c.note) + "</p>");
-    return hero({ title: esc(p.hero.title), lede: esc(p.hero.text), lede2: p.hero.extra ? esc(p.hero.extra) : "", acts: btn(p.hero.btn) + '<a class="link" href="#work">All projects</a>' }) +
+    var top = hero({ title: esc(p.hero.title), lede: esc(p.hero.text), lede2: p.hero.extra ? esc(p.hero.extra) : "", acts: pair(p.hero.btn) + '<a class="link" href="#work">All projects</a>' });
+    if (CASE_FILM[c.slug]) top = top.replace(/<\/section>$/, heroClip(c.slug) + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo">');
+    return top +
       '<div class="page-body">' + body + story(p.story && p.story.title ? p.story : null) + closing() + "</div>";
   }
 
@@ -413,16 +432,16 @@
     if (!late) body += plate(PLATE[id]);
     if (v.steps) body += sec("<h2>" + esc(v.steps.title) + "</h2>" + paras(v.steps.text, true) + '<ol class="steps three-steps">' + v.steps.items.map(function (s, k) {
       return '<li><span class="step-no">Step ' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>");
-    body += sec("<h2>" + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + btn(v.banner.btn) + "</div>", "tagline");   // the page's one call to action, after how it launches
+    body += sec("<h2>" + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + pair(v.banner.btn) + "</div>", "tagline");   // the page's one call to action, after how it launches
     body += cards(d.cases || [], "Example projects", "");
     body += faqHtml(v.faq);
     body += sec("<h2>" + esc(v.also) + '</h2><ul class="niches">' + ALSO.filter(function (a) { return a[1] !== id; }).map(function (a) {
       return '<li><a href="#for-' + a[1] + '">' + esc(a[0]) + "</a></li>"; }).join("") + "</ul>");
     body += story(v.story);   // the banner to the homepage story comes last before the form, as on the project pages
-    return hero({ num: d.num, ch: d.num ? chTitle(id) : "", title: esc(v.hero.title), lede: esc(v.hero.text), acts: btn(v.hero.btn) }) + '<div class="page-body">' + body + closing() + "</div>";
+    return hero({ num: d.num, ch: d.num ? chTitle(id) : "", title: esc(v.hero.title), lede: esc(v.hero.text), acts: pair(v.hero.btn) }) + '<div class="page-body">' + body + closing() + "</div>";
   }
   function pageIndustries() {
-    return hero({ title: "Industries", lede: esc(HOME.agnostic), acts: '<a class="book" href="#start">Get a quote</a>' }) +
+    return hero({ title: "Industries", lede: esc(HOME.agnostic), acts: QUOTE + BOOK }) +
       '<div class="page-body"><section class="block-sec"><ul class="index-list">' + NICHE_ORDER.map(function (k) {
         var t = SUB[k] || "";
         return '<li><a href="#for-' + k + '"><span class="il-num" aria-hidden="true">' + (IND[k].num || "") + '</span><span class="il-name">' + esc(nicheName(k)) +
@@ -468,21 +487,25 @@
   function pageStudio() {
     return hero({ title: esc(HOME.about.title), lede: esc(HOME.about.text), lede2: esc(REQUIRED), acts: '<a class="book" href="#start">' + esc(HOME.about.btn) + "</a>" + BOOK })
         .replace(/<\/section>$/, teamPhoto() + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo">') +
-      '<div class="page-body">' + sec(storyPeek(), "peek-sec") +
-      sec("<h2>" + esc(HOME.problem.title) + "</h2>" + grid(HOME.problem.items) + '<p class="lead after-grid">' + esc(HOME.problem.close) + "</p>") +
-      sec("<h2>" + esc(HOME.fly.title) + '</h2><p class="lead">' + esc(HOME.fly.text) + "</p>") +
+      '<div class="page-body about-body">' + sec(storyPeek(), "peek-sec") +
+      // Josh, 11 Nov: the words are good but the page read as a wall of text. Same words, laid out as cards, a call-out,
+      // VF's own clips beside the answer, numbered steps and the team beside its people (Vemir: keep every word)
+      sec("<h2>" + esc(HOME.problem.title) + "</h2>" + grid(HOME.problem.items).replace('class="three"', 'class="three tiles problem"') + '<p class="callout">' + esc(HOME.problem.close) + "</p>", "band") +
+      sec('<div class="split"><div><h2>' + esc(HOME.fly.title) + '</h2><p class="lead">' + esc(HOME.fly.text) + '</p></div><div class="split-media">' +
+        clip("mirror-live", "Hair on, hair off: smooth results, live in the mirror.", ["#work-nios-mirror", "The project"]) +
+        clip("tryon-app", "From the product page to the try-on in one tap.", ["#work-noyah-tryon", "The project"]) + "</div></div>", "fly-sec") +
       sec("<h2>" + esc(HOME.process.title) + '</h2><p class="lead">' + esc(HOME.process.sub) + '</p><ol class="steps">' + HOME.process.steps.map(function (s, k) {
-        return '<li><span class="step-n" aria-hidden="true">' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>") +
+        return '<li><span class="step-n" aria-hidden="true">' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>", "band") +
       sec('<h2>Tech stack</h2><ul class="data">' + STACK.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + '</ul><p class="note">And much more.</p>') +
-      sec("<h2>Meet the team</h2>" + MISSION.map(function (p, k) { return "<p" + (k ? "" : ' class="lead"') + ">" + esc(p) + "</p>"; }).join("") +
-        "<p>Between us, we bring years of experience in AI, medicine, CPG, and beauty.</p>" + teamList() +
+      sec('<div class="split team-split"><div><h2>Meet the team</h2>' + MISSION.map(function (p, k) { return "<p" + (k ? "" : ' class="lead"') + ">" + esc(p) + "</p>"; }).join("") +
+        "<p>Between us, we bring years of experience in AI, medicine, CPG, and beauty.</p></div><div>" + teamList() + "</div></div>" +
         '<blockquote class="quote"><p>“' + esc(FOUNDER[0]) + '”</p><footer>' + esc(FOUNDER[1]) + "</footer></blockquote>") +
       sec("<h2>On the show floor</h2><p class=\"lead\">In 2026 we took our AR on the road to NRF, Expo West and AWE USA, with four live activations at AWE alone. At NRF, TV Tokyo’s World Business Satellite stopped by to film our booth and interview Josh.</p>" +
         gallery([["img", "nrf-demo", 1600, 1067, "The team demoing at the Virtual Fudge booth, NRF 2026."], ["img", "awe-crowd", 1600, 1200, "Visitors at our booth at AWE USA 2026, talking with the team."],
                  ["img", "expo-team", 1600, 1408, "The team at the Virtual Fudge booth, Expo West 2026."]]) +
         "<p class=\"after-film\"><a class=\"link\" href=\"#shows\">Photos and film from all three</a></p>") +
-      sec("<h2>How we can work together</h2>" + grid(WAYS)) +
-      sec("<h2>Partnerships & memberships</h2>" + grid(PARTNERS) + '<p>Hardware makers, agencies, integrators and venues, come say hi: <a class="link" href="mailto:' + STUDIO.partners + '">' + STUDIO.partners + "</a></p>") +
+      sec("<h2>How we can work together</h2>" + grid(WAYS).replace('class="three"', 'class="three tiles"'), "band") +
+      sec("<h2>Partnerships & memberships</h2>" + grid(PARTNERS).replace('class="three"', 'class="three tiles"') + '<p>Hardware makers, agencies, integrators and venues, come say hi: <a class="link" href="mailto:' + STUDIO.partners + '">' + STUDIO.partners + "</a></p>") +
       sec("<h2>Why a small studio?</h2><p class=\"lead\">Bigger isn’t always better, and we wrote down why.</p><p><a class=\"link\" href=\"#blog-small-ar-studio-advantages\">" + esc((postBy("small-ar-studio-advantages") || { title: "On our blog" }).title) + "</a></p>") +
       story() + closing() + "</div>";
   }
@@ -523,7 +546,7 @@
     '<div class="press-text"><h3>On TV Tokyo’s World Business Satellite</h3><p>Reporting on AI shopping from NRF 2026, WBS stopped by our booth: the Noyah Cosmetics virtual store on a tablet, and an interview with Josh.</p>' +
     '<p class="press-quote">“Product information in its own virtual space, showing customers a product’s world and what sets it apart.”</p><p class="press-src">WBS’s on-screen caption, translated from the Japanese. 53 seconds, with sound.</p></div></div>';
   function pageShows() {
-    return hero({ title: "On the show floor", lede: "In 2026 we packed up our own booth for three of the biggest shows in the business and let people try every build for themselves.", acts: REEL_BTN + '<a class="book" href="#start">Get a quote</a>' }) +
+    return hero({ title: "On the show floor", lede: "In 2026 we packed up our own booth for three of the biggest shows in the business and let people try every build for themselves.", acts: QUOTE + BOOK + REEL_BTN }) +
       '<div class="page-body">' + SHOWS.map(function (s) {
         return '<section class="block-sec show" id="show-' + s.id + '" aria-labelledby="h-' + s.id + '"><h2 id="h-' + s.id + '">' + esc(s.name) + "</h2>" +
           '<p class="show-when">' + s.when + "<span>" + esc(s.where) + '</span></p><p class="lead">' + esc(s.lead) + "</p>" +
@@ -534,7 +557,7 @@
           (s.post ? '<p class="after-film"><a class="link" href="' + s.post[1] + '">' + esc(s.post[0]) + "</a></p>" : "") + "</section>";
       }).join("") +
       sec("<h2>Bring it to your booth</h2><p class=\"lead\">One thing people stop for in the three seconds they give you, a scan that doubles as the sign-up, and an experience that goes home on their phone. Let’s build yours.</p>" +
-        '<div class="acts"><a class="book" href="#start">Get a quote</a><a class="link" href="#for-events">AR in marketing</a></div>') + "</div>";
+        '<div class="acts">' + QUOTE + BOOK + '<a class="link" href="#for-events">AR in marketing</a></div>') + "</div>";
   }
   function tagLine(tags) { return tags.map(function (t, k) { return k && !/^[A-Z]{2}/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; }).join(", "); }
   // meta in plain words, commas between (the brief: no middle-dot meta strings); a date or a reading time never breaks across lines
@@ -544,20 +567,26 @@
   // A card crops its cover to 3:2, so the picture is drawn 1.58 times the card's width (mostly 450 to 710 css px), the
   // lead card up to 1013: covers wider than 1080 px offer the 640 and 1080 px copies tools/make-blog-cards.sh
   // makes, and the sizes below (measured 10 Nov 2026 from 320 to 2560 px windows) let the browser take the smallest sharp one.
-  function cardSrcset(p, lead) {
+  function coverSrcset(p, sizes) {
     if (p.hero[1] <= 1080) return "";
     var b = p.hero[0].replace(/^\/assets\/blog\//, "/assets/blog/card/").replace(/\.jpg$/, "");
-    return '" srcset="' + b + "-640.jpg 640w, " + b + "-1080.jpg 1080w, " + p.hero[0] + " " + p.hero[1] + 'w" sizes="' +
-      (lead ? "(max-width: 1099px) 93vw, (max-width: 1299px) 54vw, (max-width: 1599px) 685px, 815px"
-            : "(max-width: 640px) 146vw, (max-width: 1099px) 71vw, (max-width: 1299px) 46vw, (max-width: 1599px) 590px, 705px");
+    return '" srcset="' + b + "-640.jpg 640w, " + b + "-1080.jpg 1080w, " + p.hero[0] + " " + p.hero[1] + 'w" sizes="' + sizes;
   }
+  function cardSrcset(p, lead) {
+    return coverSrcset(p, lead ? "(max-width: 1099px) 93vw, (max-width: 1299px) 54vw, (max-width: 1599px) 685px, 815px"
+                               : "(max-width: 640px) 146vw, (max-width: 1099px) 71vw, (max-width: 1299px) 46vw, (max-width: 1599px) 590px, 705px");
+  }
+  // A post's own cover is drawn 92% of the window wide up to 1180 css px (measured 11 Nov 2026 from 320 to 2560 px), so a
+  // phone takes the 1080 px copy (about 40% lighter) and a wide screen the full cover. tools/build-public.py gives the
+  // hidden copy of the post in a real page the same srcset and sizes, so the browser fetches one picture, not two.
+  var POST_COVER_SIZES = "(max-width: 1279px) 92vw, 1180px";
   function postCard(p, lead) {
     return '<li class="post-card' + (lead ? " lead-post" : "") + '"><a href="#blog-' + p.slug + '">' +
       (p.hero ? '<span class="post-pic"><img src="' + p.hero[0] + cardSrcset(p, lead) + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="" loading="' + (lead ? "eager" : "lazy") + '" decoding="async"></span>' : "") +
       '<span class="post-text"><span class="post-meta">' + postMeta(p) + '</span><span class="post-title">' + esc(p.title) + '</span><span class="post-line">' + esc(p.desc) + "</span></span></a></li>";
   }
   function pageJournal() {
-    return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: '<a class="book" href="#start">Get a quote</a>' }) +
+    return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: QUOTE + BOOK }) +
       '<div class="page-body"><section class="block-sec blog-sec" aria-label="Posts"><ul class="post-grid">' + BLOG.map(function (p, k) { return postCard(p, k === 0); }).join("") + "</ul></section>" +
       closing() + "</div>";   // (the footer's newsletter form follows: the page's own was a second one, 10 Nov review)
   }
@@ -654,7 +683,7 @@
     return '<section class="page-hero post-hero"><div class="col"><p class="over"><a href="#blog">' + esc(HOME.blog.title) + "</a>: " + esc(p.category) + "</p>" +
       '<h1 class="display" tabindex="-1">' + esc(p.title) + '</h1><p class="post-byline">' + (p.author ? "By " + esc(p.author) + ", " : "") +
       '<time datetime="' + p.date + '">' + nw(day(p.date)) + "</time>, " + readTime(p) + "</p></div></section>" +
-      '<div class="page-body post-body">' + (p.hero ? '<figure class="post-lead"><img src="' + p.hero[0] + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="' + esc(p.hero[3]) + '" decoding="async"></figure>' : "") +
+      '<div class="page-body post-body">' + (p.hero ? '<figure class="post-lead"><img src="' + p.hero[0] + coverSrcset(p, POST_COVER_SIZES) + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="' + esc(p.hero[3]) + '" decoding="async"></figure>' : "") +
       '<article class="post">' + body + "</article>" +
       '<section class="block-sec more-posts"><h2>Keep reading</h2><ul class="post-grid">' + more.map(function (o) { return postCard(o, false); }).join("") + '</ul><p><a class="link" href="#blog">All posts</a></p></section>' +
       closing() + "</div>";
@@ -662,7 +691,7 @@
   // an address may break after its @ when a column is narrower than it ("partnerships@ / virtualfudge.com"), never mid-word
   function addr(a) { return esc(a).replace("@", "@<wbr>"); }
   function pageContact() {
-    return hero({ title: "Say hi", lede: "Tell us briefly what you want, and we’ll let you know if we can help. Fastest way in? Book a call.", acts: BOOK + '<a class="link" href="#start">Get a quote</a>' }) +
+    return hero({ title: "Say hi", lede: "Tell us briefly what you want, and we’ll let you know if we can help. Fastest way in? Book a call.", acts: BOOK + QUOTE }) +
       '<div class="page-body"><section class="block-sec"><h2 class="sr">How to reach us</h2><div class="three contact">' +
       '<div><h3>Write</h3><p><a class="link" href="mailto:' + STUDIO.email + '">' + addr(STUDIO.email) + "</a></p></div>" +
       '<div><h3>Call</h3><p><a class="link" href="tel:' + STUDIO.tel + '">' + STUDIO.phone + "</a></p></div>" +
@@ -690,7 +719,6 @@
       '<input id="' + id + '" type="email" name="email" placeholder="Email address" autocomplete="email" required><button type="submit" class="book">Subscribe</button></div>' +
       '<p class="news-status" role="status"></p></form>';
   }
-  function newsSection() { return sec(newsForm("news-" + Math.random().toString(36).slice(2, 7)), "news-sec"); }
   document.addEventListener("submit", function (e) {
     var f = e.target.closest && e.target.closest(".news-form"); if (!f) return;
     e.preventDefault();
@@ -732,6 +760,7 @@
                ["If “Other,” please specify", "text", 0, "", null, "What is your project’s timeline or deadline?=Other", "Other timeline"],
                ["@attach"],   // VF's place for the attachments: before "How did you find us?"
                ["How did you find us?", "text", 1, "", null, null, "e.g., Google, LinkedIn, Referral"]],
+      groups: [["How to reach you", 7], ["Your project", 5], [null, 1]],
       attach: { label: "Feel free to attach any documents relevant to your project.", button: "Choose files", multiple: true, required: false, maxMB: 20,
         accept: ".pdf,.doc,.docx,.txt,.pages,.jpg,.jpeg,.png,.gif,.mp4,.mov,.mp3,.wav,.zip",
         note: "Max 20 MB. Allowed formats: PDF, DOC, DOCX, TXT, PAGES, JPG, JPEG, PNG, GIF, MP4, MOV, MP3, WAV, ZIP. For large files (3D models, hi-res video, PSD/AI) upload to a cloud service and paste the link in your description." } },
@@ -752,8 +781,10 @@
     var cond = d[5] ? ' data-when="' + esc(d[5]) + '" hidden' : "", ph = d[6] ? ' placeholder="' + esc(d[6]) + '"' : "";
     var lab = '<label for="' + id + '">' + name + (d[2] ? " *" : "") + "</label>";
     var ctl = d[1] === "area" ? '<textarea id="' + id + '" name="' + name + '" rows="5" maxlength="2000"' + ph + req + "></textarea>"
-      : d[1] === "select" ? '<select id="' + id + '" name="' + name + '"' + req + '><option value="">Please choose an option</option>' + d[4].map(function (t) { return "<option>" + esc(t) + "</option>"; }).join("") + "</select>"
+      : d[1] === "select" ? null
       : '<input id="' + id + '" name="' + name + '" type="' + d[1] + '"' + ac + ph + req + ">";
+    if (d[1] === "select") return '<fieldset class="vf-field wide vf-pills"' + cond + '><legend>' + name + (d[2] ? " *" : "") + '</legend><div class="vf-pill-row">' +
+      d[4].map(function (t, j) { return '<label class="vf-pill"><input type="radio" id="' + id + (j ? "-" + j : "") + '" name="' + name + '" value="' + esc(t) + '"' + req + "><span>" + esc(t) + "</span></label>"; }).join("") + "</div></fieldset>";
     return '<div class="vf-field' + (d[1] === "area" ? " wide" : "") + '"' + cond + ">" + lab + ctl + "</div>";
   }
   // VF's attachment field: a button (or drop the files on it), the chosen files listed with their size, and VF's limits
@@ -766,33 +797,53 @@
       '<ul class="vf-file-list"></ul><p class="note vf-attach-note" id="' + id + '-note">' + esc(a.note) + "</p></div>";
   }
   function formHtml(f, on) {
-    var to = STUDIO[f.to], k = 0;
-    return '<form class="vf-form" id="form-' + f.id + '" data-subject="' + f.subject + '" data-to="' + to + '" data-done="' + esc(f.done) + '" novalidate' + (on ? "" : " hidden") + '><h2>' + esc(f.title) + "</h2>" + (f.lead ? '<p class="lead">' + esc(f.lead) + "</p>" : "") +
-      '<div class="vf-fields">' + f.fields.map(function (d) { return d[0] === "@attach" ? attachHtml(f) : fieldHtml(f, d, k++); }).join("") + "</div>" +
+    var to = STUDIO[f.to], k = 0, at = 0;
+    var one = function (d) { return d[0] === "@attach" ? attachHtml(f) : fieldHtml(f, d, k++); };
+    var num = function (n) { return (n < 9 ? "0" : "") + (n + 1); };
+    var body = f.groups ? f.groups.map(function (g, n) {
+        var part = f.fields.slice(at, at += g[1]);
+        return '<div class="vf-group' + (g[0] ? "" : " vf-group-solo") + '" data-group="' + n + '" id="' + f.id + "-group-" + n + '"><span class="vf-group-num" aria-hidden="true">' + num(n) + '<i class="vf-tick"></i></span>' +
+          '<div class="vf-group-body">' + (g[0] ? '<h3 class="vf-group-title">' + esc(g[0]) + "</h3>" : "") + '<div class="vf-fields">' + part.map(one).join("") + "</div></div></div>";
+      }).join("") : '<div class="vf-fields">' + f.fields.map(one).join("") + "</div>";
+    var at2 = 0, sum = f.groups ? '<nav class="vf-sum" aria-label="' + esc(f.title) + '"><span class="vf-sum-bar" aria-hidden="true"><i></i></span><ol>' + f.groups.map(function (g, n) {
+        var first = f.fields[at2]; at2 += g[1];
+        return '<li><a href="#' + f.id + "-group-" + n + '" data-step="' + n + '"><span class="vf-sum-num">' + num(n) + '<i class="vf-tick"></i></span><span class="vf-sum-title">' + esc(g[0] || first[0]) + '</span><span class="vf-sum-said"></span></a></li>';
+      }).join("") + "</ol></nav>" : "";
+    return '<form class="vf-form' + (f.groups ? " vf-grouped" : "") + '" id="form-' + f.id + '" data-subject="' + f.subject + '" data-to="' + to + '" data-done="' + esc(f.done) + '" novalidate' + (on ? "" : " hidden") + '><h2>' + esc(f.title) + "</h2>" + (f.lead ? '<p class="lead">' + esc(f.lead) + "</p>" : "") +
+      (f.groups ? '<div class="vf-body"><div class="vf-main">' + body : body) +
       '<div class="vf-final">' +
       '<div class="acts"><a class="book vf-send" href="mailto:' + to + '">' + f.send + '</a><span class="vf-status" role="status"></span></div>' +
       '<div class="vf-after" hidden><p class="lead"></p><div class="acts">' + BOOK + "</div></div>" +
-      '<p class="vf-alt">Or write to <a class="link" href="mailto:' + to + '">' + to + "</a>.</p></div></form>";
+      '<p class="vf-alt">Or write to <a class="link" href="mailto:' + to + '">' + to + "</a>.</p></div>" + (f.groups ? "</div>" + sum + "</div>" : "") + "</form>";
   }
   // Start: the three ways in, each a card that says what it is for; #careers opens it on the careers form (Vemir, 19 Oct)
   // the top of Start and of Careers (one page, two addresses): its title, line and button follow the choice below
-  var START_TOP = { start: ["Let’s talk AR!", "What would you like to do today?", BOOK + '<button type="button" class="link" data-see-options>Choose your option</button>'],   // the second act goes to the cards below: a quote-seeker saw only this first screen and had to guess the rest was there (30 Oct audit)
+  // the two ways in, side by side (Josh, 11 Nov): "Get a quote" glides to the quote form (and picks it, if another card
+  // was chosen), "Book a call" opens the calendar; the cards and the form start in the first screen, under this short top
+  var START_TOP = { start: ["Let’s talk AR!", "What would you like to do today?", '<button type="button" class="book" data-see-options>Get a quote</button>' + BOOK],
     careers: ["Careers", "Send us your resume, or choose another option below.", '<a class="link" href="#studio">Meet the team</a>'] };
   function pageStart(pick) {
     var on = FORMS.some(function (f) { return f.id === pick; }) ? pick : "quote";
     var top = START_TOP[on === "careers" ? "careers" : "start"];
-    return hero({ title: top[0], lede: top[1], acts: top[2] }) +
-      '<div class="page-body"><section class="block-sec"><p class="choose-label" id="choose-label">Choose your option:</p><div class="vf-choose" role="group" aria-labelledby="choose-label">' + FORMS.map(function (f) {
+    return hero({ title: top[0], lede: top[1], acts: top[2], cls: "page-hero-start" }) +
+      '<div class="page-body page-body-start"><section class="block-sec"><p class="choose-label" id="choose-label">Choose your option:</p><div class="vf-choose" role="group" aria-labelledby="choose-label">' + FORMS.map(function (f) {
         return '<button type="button" class="vf-tab" data-form="' + f.id + '" aria-pressed="' + (f.id === on) + '"><span class="vf-tab-title">' + esc(f.tab) + '</span><span class="vf-tab-text">' + esc(f.pick) + "</span></button>"; }).join("") + "</div>" +
       FORMS.map(function (f) { return formHtml(f, f.id === on); }).join("") + "</section>" +
       sec('<h2>Rather call or write?</h2><p class="lead"><a class="link" href="mailto:' + STUDIO.email + '">' + STUDIO.email + '</a></p><p><a class="link" href="tel:' + STUDIO.tel + '">' + STUDIO.phone + "</a></p>") +
-      newsSection() + "</div>";
+      "</div>";   // the newsletter is in the footer, once (11 Nov meeting)
   }
   // the forms: the chooser shows one form; "Send" carries what was typed into an email, once the required fields are filled
   function formMail(form) {
     var lines = [], missing = null;
     form.querySelectorAll("input, select, textarea").forEach(function (el) {
       var wrap = el.closest("[data-when]"); if (wrap && wrap.hidden) return;
+      if (el.type === "radio") {
+        var row = form.querySelectorAll('input[type="radio"][name="' + el.name + '"]'), pick = form.querySelector('input[type="radio"][name="' + el.name + '"]:checked');
+        if (el !== row[0]) return;
+        if (el.required && !pick && !missing) missing = el;
+        if (pick) lines.push(el.name + ": " + pick.value);
+        return;
+      }
       if (el.type === "file") {
         var fl = filesOf(form);
         if (el.required && !fl.length && !missing) missing = el;
@@ -827,7 +878,7 @@
     FILES.set(form, have); if (have.length) input.removeAttribute("aria-invalid");
     drawFiles(form);
     $(".vf-status", form).textContent = refused.length ? "Not added: " + refused.join("; ") + "." : "";
-    $(".vf-send", form).href = formMail(form).href;
+    $(".vf-send", form).href = formMail(form).href; sumUpdate(form);
   }
   function drawFiles(form) {
     var ul = $(".vf-file-list", form); if (!ul) return;
@@ -844,7 +895,7 @@
     if (ev === "drop") { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(d.closest("form"), e.dataTransfer.files); } }); });
   function whenUpdate(form) {
     form.querySelectorAll("[data-when]").forEach(function (w) {
-      var rule = w.getAttribute("data-when").split("="), src = form.querySelector('select[name="' + rule[0] + '"]');
+      var rule = w.getAttribute("data-when").split("="), src = form.querySelector('select[name="' + rule[0] + '"], input[type="radio"][name="' + rule[0] + '"]:checked');
       w.hidden = !(src && rule[1].split("|").indexOf(src.value) > -1);
     });
   }
@@ -852,7 +903,8 @@
     var t = e.target.closest ? e.target : e.target.parentElement;
     var see = t.closest("[data-see-options]");
     if (see) {
-      var lab = $("#choose-label");
+      var lab = $("#choose-label"), quote = $('.vf-tab[data-form="quote"]');
+      if (quote && quote.getAttribute("aria-pressed") !== "true") quote.click();
       if (lab) {
         // the page's own short glide, held frame by frame: a browser cancels a smooth scrollIntoView when late media
         // below still shifts the page, as it does right after this page opens; 124 leaves air under the fixed header
@@ -860,6 +912,18 @@
         if (REDUCE || !d) window.scrollTo(0, to);
         else requestAnimationFrame(function step(now) { var k = Math.min(1, (now - t0) / 450); window.scrollTo(0, from + d * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); });
         var on = $('.vf-tab[aria-pressed="true"]'); if (on) on.focus({ preventScroll: true });
+      }
+      return;
+    }
+    // a step on the card glides to its group and puts the cursor in its first field (no # change: the site routes by #)
+    var step = t.closest(".vf-sum a[data-step]");
+    if (step) {
+      e.preventDefault();
+      var grp = $("#" + step.getAttribute("href").slice(1)), first = grp && grp.querySelector("input, textarea");
+      if (grp) {
+        var y = grp.getBoundingClientRect().top + window.scrollY - 124;
+        window.scrollTo({ top: y, behavior: REDUCE ? "auto" : "smooth" });
+        if (first) first.focus({ preventScroll: true });
       }
       return;
     }
@@ -912,16 +976,41 @@
     }
     var rm = t.closest(".vf-file-remove");
     if (rm) {
-      var f3 = rm.closest("form"), k3 = +rm.getAttribute("data-k"), list = filesOf(f3).slice(); list.splice(k3, 1); FILES.set(f3, list); drawFiles(f3); $(".vf-send", f3).href = formMail(f3).href;
+      var f3 = rm.closest("form"), k3 = +rm.getAttribute("data-k"), list = filesOf(f3).slice(); list.splice(k3, 1); FILES.set(f3, list); drawFiles(f3); $(".vf-send", f3).href = formMail(f3).href; sumUpdate(f3);
       // the button just went with its file: focus moves to the next file's Remove, or back to the field once the list is empty
       var rest = f3.querySelectorAll(".vf-file-remove"), next = rest[Math.min(k3, rest.length - 1)] || $(".vf-attach input[type=file]", f3);
       if (next) next.focus();
       return;
     }
   });
+  function sumUpdate(form) {
+    var sum = $(".vf-sum", form); if (!sum) return;
+    var need = 0, have = 0;
+    form.querySelectorAll(".vf-group").forEach(function (g) {
+      var n = g.getAttribute("data-group"), gNeed = 0, gHave = 0, said = [];
+      g.querySelectorAll("input, textarea").forEach(function (el) {
+        if (el.closest("[data-when]") && el.closest("[data-when]").hidden) return;
+        if (el.type === "radio") {
+          if (el !== g.querySelector('input[type="radio"][name="' + el.name + '"]')) return;
+          var pk = g.querySelector('input[type="radio"][name="' + el.name + '"]:checked');
+          if (el.required) { gNeed++; if (pk) gHave++; } if (pk) said.push(pk.value); return;
+        }
+        if (el.type === "file") { var fl = filesOf(form); if (fl.length) said.push(fl.map(function (x) { return x.name; }).join(", ")); return; }
+        var v = el.value.trim(); if (el.required) { gNeed++; if (v) gHave++; }
+        if (!v || el.tagName === "TEXTAREA" || el.type === "email" || el.type === "tel") return;
+        if (el.getAttribute("autocomplete") === "family-name" && said.length && g.querySelector('[autocomplete="given-name"]').value.trim()) said[said.length - 1] += " " + v; else said.push(v);
+      });
+      need += gNeed; have += gHave;
+      var ok = gNeed > 0 && gHave === gNeed, a = $('a[data-step="' + n + '"]', sum);
+      g.classList.toggle("is-done", ok); if (a) { a.classList.toggle("is-done", ok); $(".vf-sum-said", a).textContent = said.join(" · "); }
+    });
+    $(".vf-sum-bar i", sum).style.transform = "scaleX(" + (need ? have / need : 0) + ")";
+  }
   document.addEventListener("input", function (e) { var form = e.target.closest && e.target.closest(".vf-form"); if (!form) return; whenUpdate(form); $(".vf-send", form).href = formMail(form).href;
-    if (e.target.value && e.target.value.trim()) e.target.removeAttribute("aria-invalid"); });
-  document.addEventListener("change", function (e) { var form = e.target.closest && e.target.closest(".vf-form"); if (form) whenUpdate(form); });
+    if (e.target.type === "radio") form.querySelectorAll('input[type="radio"][name="' + e.target.name + '"]').forEach(function (r) { r.removeAttribute("aria-invalid"); });
+    else if (e.target.value && e.target.value.trim()) e.target.removeAttribute("aria-invalid");
+    sumUpdate(form); });
+  document.addEventListener("change", function (e) { var form = e.target.closest && e.target.closest(".vf-form"); if (form) { whenUpdate(form); sumUpdate(form); } });
 
   // virtualfudge.com's privacy policy, word for word (the pop-up on its homepage, read 7 Oct 2026; docs/source/vf-site/privacy-policy.md).
   // Only VF's own slip is mended: the "Third Party Privacy Policies" heading also opened its first paragraph.
@@ -1226,7 +1315,7 @@
   // each page's shape for the block: [chapter, point in its change] (0, 0.28 is the block freshly cut)
   function route(h) {
     if (h === "work") return { title: "Projects", html: pageWork, stage: null };      // no block: the projects' own footage (Josh, 28 Oct)
-    if (h.indexOf("work-") === 0) { var c = caseBy(h.slice(5)); return c ? { title: cardOf(c.slug).title, html: function () { return pageCase(c); }, stage: [c.world, 0] } : null; }
+    if (h.indexOf("work-") === 0) { var c = caseBy(h.slice(5)); return c ? { title: cardOf(c.slug).title, html: function () { return pageCase(c); }, stage: CASE_FILM[c.slug] ? null : [c.world, 0] } : null; }
     if (h.indexOf("for-") === 0) { var id = h.slice(4), w = IND[id] ? IND[id].n || IND[id].world : 0; return w ? { title: nicheName(id), html: function () { return pageIndustry(id); }, stage: [w, 0] } : null; }
     if (h === "industries") return { title: "Industries", html: pageIndustries, stage: [0, 0.3] };   // the box beginning to open
     if (h === "shows") return { title: "Events", html: pageShows, stage: [5, 0] };   // the booth floor; named as the menu names it
@@ -1234,8 +1323,9 @@
     if (h === "blog" || h === "journal") return { title: "Blog", html: pageJournal, stage: [0, 0.09] };   // the lid just open, a line of light
     if (h.indexOf("blog-") === 0) { var post = postBy(h.slice(5)); return post ? { title: post.title, html: function () { return pagePost(post); }, stage: null } : null; }   // a post reads on plain paper
     if (h === "contact") return { title: "Contact", html: pageContact, stage: [8, 0] };
-    if (h === "start") return { title: "Get a quote", html: function () { return pageStart("quote"); }, stage: [8, 0] };
-    if (h === "careers") return { title: "Careers", html: function () { return pageStart("careers"); }, stage: [8, 0] };
+    // the forms on plain paper with a short top, so "Get a quote" lands on the form (Josh, 11 Nov; was the block, a full screen)
+    if (h === "start") return { title: "Get a quote", html: function () { return pageStart("quote"); }, stage: null };
+    if (h === "careers") return { title: "Careers", html: function () { return pageStart("careers"); }, stage: null };
     if (h === "legal") return { title: "Privacy policy", html: pageLegal, stage: null };
     return null;
   }
