@@ -1270,8 +1270,10 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 @media (max-width: 600px) { .boom { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 860px) { .contact-card { align-self: stretch; margin: 0 var(--gutter) 48px; } }
 
-.ind-body .answer-head > div > h2 { margin: 0 0 22px; }   /* a heading with its first paragraph under it */
-.ind-body .answer-head.lead-split { align-items: end; }   /* the rest of the words end level with the first paragraph */
+.ind-body .answer-head.lead-split { align-items: start; row-gap: 22px; }   /* the heading on its own row; both columns of words */
+.ind-body .answer-head.lead-split > h2 { grid-column: 1; grid-row: 1; }      /* start on the same line under it (18 Nov) */
+.ind-body .answer-head.lead-split > div { grid-row: 2; }
+@media (max-width: 860px) { .ind-body .answer-head.lead-split > h2, .ind-body .answer-head.lead-split > div { grid-row: auto; } }
 /* an industry's call to action with its drawing beside it, in the decks' copper wireframe (Vemir, 18 Nov) */
 .tagline.has-art { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; column-gap: clamp(24px, 4vw, 72px); }
 .tag-art { margin: 0; display: flex; justify-content: center; }

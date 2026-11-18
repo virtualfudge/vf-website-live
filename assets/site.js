@@ -434,10 +434,11 @@
   // a section's heading on the left and its words beside it, so no paragraph sits alone under a heading with the right half
   // empty (Vemir, 18 Nov: "too much text dump")
   // with two or more paragraphs, the first goes under the heading and the rest beside it, so neither column stands empty
-  // (Vemir, 18 Nov: the heading alone over a blank half looked off)
+  // (Vemir, 18 Nov: the heading alone over a blank half looked off); the heading takes its own row, so both columns of
+  // words start on the same line (Vemir, 18 Nov: "things should be on the same line")
   function headSplit(title, html) {
     var cut = html.indexOf("</p>") + 4, rest = cut > 3 ? html.slice(cut) : "";
-    if (/<p[\s>]/.test(rest)) return '<div class="split answer-head lead-split"><div><h2>' + title + "</h2>" + html.slice(0, cut) + "</div><div>" + rest + "</div></div>";
+    if (/<p[\s>]/.test(rest)) return '<div class="split answer-head lead-split"><h2>' + title + "</h2><div>" + html.slice(0, cut) + "</div><div>" + rest + "</div></div>";
     return '<div class="split answer-head"><h2>' + title + "</h2><div>" + html + "</div></div>";
   }
   function pageIndustry(id) {
