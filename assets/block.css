@@ -191,17 +191,6 @@ main { position: relative; z-index: 5; pointer-events: none; }
 .lead + p, .builds p + p { margin-top: 14px; }
 .tagline h2 { font-size: clamp(30px, 3.2vw, 54px); max-width: 22ch; text-wrap: balance; }
 .tagline .acts { margin-top: 28px; }
-/* an industry's challenges beside what Virtual Fudge builds for them (27 Oct, Josh's "purposeful blocks"): one block, two
-   columns from 1000 px; the challenges in quiet ink under grey rules, the answer in ink under brass ones */
-.pair { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0 clamp(48px, 6vw, 96px); align-items: start; }
-.pair h2 { font-size: clamp(28px, 2.3vw, 40px); text-wrap: balance; }
-.pair-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
-.pair-list li { padding-top: 16px; border-top: 1px solid rgba(26, 13, 5, .16); }
-.pair-answer .pair-list li { border-top-color: rgba(181, 120, 42, .55); }
-.pair-ask h3 { color: var(--ink-quiet); }
-.block-sec .pair p + .pair-list { margin-top: 30px; }
-@media (max-width: 999px) { .pair { grid-template-columns: minmax(0, 1fr); } .pair-answer { margin-top: 64px; } }
-@media (min-width: 640px) and (max-width: 999px) { .pair-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 34px; } }
 .example { margin-top: 34px; padding-left: 22px; border-left: 2px solid var(--brass); max-width: 70ch; }
 .example h3 { margin-bottom: 8px; }
 .example p + p { margin-top: 12px; }
@@ -704,7 +693,7 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
   .post > .aside, .post > .aside-photo { float: right; clear: right; width: var(--aw); margin: calc(2.4 * clamp(26px, 2.2vw, 34px)) calc(-1 * (var(--aw) + var(--ag))) 2em 0; }
   .post > .aside.clip.phone { --cw: calc(var(--aw) * .8); width: var(--cw); margin-right: calc(-1 * (var(--cw) + var(--ag))); }
   .post > .aside-photo { --aw: clamp(280px, 25vw, 400px); }
-  .post > p, .post > h2, .post > h3, .post > h4, .post > ul, .post > ol, .post > blockquote { display: flow-root; }   /* each its own box, so Safari still balances headings and keeps last lines whole beside a picture (it gives up beside a float otherwise); every line breaks exactly as it does with no pictures, checked in all three engines */
+  .post > p, .post > h2, .post > h3, .post > h4, .post > ul, .post > ol, .post > blockquote, .post > .pcards, .post > .post-faq { display: flow-root; }   /* each its own box, so Safari still balances headings and keeps last lines whole beside a picture (it gives up beside a float otherwise); every line breaks exactly as it does with no pictures, checked in all three engines */
 }
 /* the opening paragraph's first letter, set large in brass as a printed feature opens (where the browser can drop a capital) */
 @supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
@@ -1088,10 +1077,135 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .hero-clip .ar-photo-in { width: auto; }
 .hero-clip .clip-frame { height: min(68vh, 640px); width: auto; max-width: 100%; }
 .hero-clip .clip { margin: 0; }
-.film { align-items: end; }
+/* the clips' tops line up (18 Nov audit: with "end", a two-line caption lifted its clip 23 px above its neighbours) */
+.film { align-items: start; }
 .film .clip-frame { height: min(470px, 62vh); width: auto; max-width: 100%; margin-left: auto !important; margin-right: auto !important; }
 @media (orientation: portrait), (max-width: 760px) and (min-height: 521px) {
   .hero-clip { align-items: center; }
   .hero-clip .clip-frame { height: min(44vh, 420px); }
   .film .clip-frame { height: min(340px, 52vh); }
 }
+/* the industry pages without the wall of text (Josh, 11 Nov; 17 Nov afternoon): About us's bands and tiles reused. The
+   challenges as one row of numbered cards, what VF builds as cards marked with a brass AR corner, under its own words */
+.ind-body .tiles.row { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+.ind-body .tiles h3 { margin-bottom: 10px; }
+.ind-body .tiles p + p { margin-top: 12px; }
+.ind-body .answer-head { align-items: start; }
+.ind-body .answer-head h2 { margin: 0; }
+.ind-body .answer-head p + p { margin-top: 14px; }
+.ind-body .answer { margin-top: 44px; gap: 22px; }
+.ind-body .answer > div { position: relative; }
+.ind-body .answer > div::before { content: ""; display: block; width: 18px; height: 18px; margin-bottom: 16px; border-top: 2px solid var(--brass); border-left: 2px solid var(--brass); }
+.ind-body .steps li .step-no { display: block; margin-bottom: 10px; }
+@media (min-width: 761px) and (max-width: 1099px) { .ind-body .answer { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* the phone's swipe rows (About us and the industries) start at the gutter: without scroll padding, snapping pulled the first
+   card flush against the screen's edge */
+@media (max-width: 760px) { .about-body .tiles, .about-body .steps { scroll-padding-inline: var(--gutter); } }
+/* five answers on a wide screen: three cards, then two that share the row, no empty slot */
+@media (min-width: 1100px) {
+  .ind-body .answer:has(> :nth-child(5):last-child) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .ind-body .answer:has(> :nth-child(5):last-child) > * { grid-column: span 2; }
+  .ind-body .answer:has(> :nth-child(5):last-child) > :nth-child(n + 4) { grid-column: span 3; }
+}
+/* the project pages without the wall of text (Josh, 11 Nov; 17 Nov evening): the industries' bands and cards reused. The
+   challenge, solution and result as cards under the brass AR corner on a band, the features as one row of cards */
+.case-body .tiles.feats { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.case-body .tiles h3 { margin-bottom: 10px; }
+.case-body .tiles p + p { margin-top: 12px; }
+.case-body .band .answer { margin-top: 34px; }
+/* more life on the pages (Josh, 11 Nov, backlog F; 17 Nov evening). A card answers the pointer: it lifts a little, its edge
+   warms to brass and the AR corner opens; the industries' rows lean in. Mouse and trackpad only (phones swipe the cards),
+   and none of it under reduced motion. The lift uses translate, not transform, so it never waits on the reveal's stagger */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .about-body .tiles > *, .about-body .steps > * {
+    transition-property: opacity, transform, translate, box-shadow; transition-duration: .6s, .75s, .45s, .45s;
+    transition-timing-function: ease, cubic-bezier(.2, .8, .2, 1), cubic-bezier(.16, 1, .3, 1), ease;
+    transition-delay: calc(min(var(--i, 0), 9) * 80ms), calc(min(var(--i, 0), 9) * 80ms), 0s, 0s; }
+  .about-body .steps > * { transition-delay: calc(min(var(--i, 0), 9) * 140ms + .3s), calc(min(var(--i, 0), 9) * 140ms + .3s), 0s, 0s; }
+  .about-body .tiles > div:hover, .about-body .steps > li:hover { translate: 0 -4px; box-shadow: 0 0 0 1px rgba(181, 120, 42, .4), 0 20px 36px -24px rgba(26, 13, 5, .5); }
+  .ind-body .answer > div::before { transition: width .45s cubic-bezier(.16, 1, .3, 1), height .45s cubic-bezier(.16, 1, .3, 1), margin .45s cubic-bezier(.16, 1, .3, 1); }
+  .ind-body .answer > div:hover::before { width: 28px; height: 28px; margin-bottom: 6px; }
+  .index-list a { transition: background-color .35s ease; }
+  .index-list a:hover { background: rgba(181, 120, 42, .06); }
+  .il-name, .il-num { transition: translate .45s cubic-bezier(.16, 1, .3, 1); }
+  .index-list a:hover .il-name, .index-list a:hover .il-num { translate: 8px 0; }
+}
+/* a post shows how far it has been read: a thin brass line along the top of the window, drawn from the post's own length */
+.read-line { position: fixed; z-index: 11; top: 0; left: 0; right: 0; height: 2px; pointer-events: none; background: var(--brass); transform: scaleX(0); transform-origin: 0 50%; }
+/* the project cards never leave an empty slot (17 Nov evening): five cards (Projects) read three, then two centred under
+   them; four (a project's "More projects") stand in one row on a wide screen, or three and one centred */
+@media (min-width: 761px) and (orientation: landscape) {
+  .cards:has(> :nth-child(5):last-child), .cards:has(> :nth-child(4):last-child) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cards:has(> :nth-child(5):last-child) > *, .cards:has(> :nth-child(4):last-child) > * { grid-column: span 2; }
+  .cards:has(> :nth-child(5):last-child) > :nth-child(4) { grid-column: 2 / span 2; }
+  .cards:has(> :nth-child(4):last-child) > :nth-child(4) { grid-column: 3 / span 2; }
+}
+@media (min-width: 1100px) and (orientation: landscape) {
+  .cards:has(> :nth-child(4):last-child) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cards:has(> :nth-child(4):last-child) > *, .cards:has(> :nth-child(4):last-child) > :nth-child(4) { grid-column: auto; }
+}
+/* the form's last step (17 Nov evening): "Or write to" stood flush under Submit (its 18 px was reset by a later rule); on a
+   phone Submit spans the form and is a full tap target, the one thing to press at the end */
+.vf-final .vf-alt { margin-top: 18px; }
+@media (max-width: 760px) { .vf-final .acts .vf-send { flex: 1 1 100%; justify-content: center; text-align: center; min-height: 50px; display: inline-flex; align-items: center; } .vf-final .vf-status:empty { display: none; } }
+
+/* a long post without the wall of text (Vemir, 17 Nov: "no wall of text ANYWHERE"): the same words, set as a magazine sets
+   them. Each section's heading stands on a cream band with the AR dot grid and a brass edge; a numbered heading shows its
+   number large; runs of bold-led or numbered paragraphs are cards; one short line per long section is a callout; a FAQ's
+   questions open and close (the answers stay in the page, found by search). site.js's postShape marks them */
+.post h2 { position: relative; isolation: isolate; margin: 2.2em -28px 0; padding: 30px 28px 28px; border-top: 2px solid var(--brass);
+  background: radial-gradient(rgba(26, 13, 5, .075) 1px, transparent 1.5px) 0 0 / 22px 22px, var(--cream); border-radius: 0 0 4px 4px; }
+.post h2::after { content: ""; position: absolute; z-index: -1; inset: 0; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(45% 70% at 18% 30%, rgba(181, 120, 42, .16), transparent 70%), radial-gradient(40% 70% at 82% 80%, rgba(181, 120, 42, .11), transparent 70%);
+  background-size: 170% 170%; animation: bandLight 26s ease-in-out infinite alternate; }
+.post h2 + * { margin-top: 1.3em !important; }
+.post .hn { display: block; margin-bottom: 10px; font: 300 clamp(40px, 3.4vw, 54px)/1 var(--f-serif); font-variation-settings: "opsz" 144; color: var(--brass); }
+.post h3 .hn { display: inline; margin: 0; font: inherit; color: var(--brass); }
+.post .say { margin: 1.8em 0 !important; padding: 4px 0 4px 22px; border-left: 3px solid var(--brass);
+  font: 400 clamp(23px, 2vw, 29px)/1.34 var(--f-serif) !important; font-variation-settings: "opsz" 72 !important; color: var(--ink) !important; text-wrap: balance; }
+.post .say strong { font-weight: 400; }
+.post .pcards { display: grid; gap: 14px; margin-top: 26px !important; }   /* px: the box inherits the page's large type, so em would balloon */
+.post .pcard > p:first-child { margin-top: 0; }
+.post .pcard { position: relative; padding: 22px 24px 22px 26px; background: var(--cream); border-radius: 4px; box-shadow: 0 0 0 1px rgba(26, 13, 5, .06); }
+.post .pcard::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; background: var(--brass); border-radius: 2px; }
+.post .pcard p { font-size: 18px; line-height: 1.62; }
+.post .pcard p + p { margin-top: .8em; }
+.post .pcard strong { display: block; margin-bottom: 6px; font: 500 21px/1.3 var(--f-serif); font-variation-settings: "opsz" 48; }
+.post .pcards.num .pn { display: block; margin-bottom: 8px; font: 300 40px/1 var(--f-serif); font-variation-settings: "opsz" 144; color: var(--brass); }
+.post .pcards.num .pcard::before { content: none; }
+.post .post-faq { margin-top: 26px !important; border-top: 1px solid rgba(26, 13, 5, .16); }
+.post .qa { border-bottom: 1px solid rgba(26, 13, 5, .16); }
+.post .qa summary { position: relative; display: block; padding: 20px 46px 20px 0; cursor: pointer; list-style: none; font: 500 20px/1.35 var(--f-serif); font-variation-settings: "opsz" 48; color: var(--ink); }
+.post .qa summary::-webkit-details-marker { display: none; }
+.post .qa summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 14px; height: 14px; margin-top: -7px;
+  background: linear-gradient(var(--brass), var(--brass)) center / 100% 2px no-repeat, linear-gradient(var(--brass), var(--brass)) center / 2px 100% no-repeat; transition: transform .3s ease; }
+.post .qa[open] summary::after { transform: rotate(45deg); }
+.post .qa summary:hover { color: var(--brass); }
+.post .qa summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; }
+.post .qa > p { margin: 0 0 22px; }
+.post .qa > p + p { margin-top: .8em; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .post .pcard { transition: opacity .6s ease calc(min(var(--i, 0), 9) * 80ms), transform .75s cubic-bezier(.2, .8, .2, 1) calc(min(var(--i, 0), 9) * 80ms), translate .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s; }   /* the reveal's fade kept beside the lift */
+  .post .pcard:hover { translate: 0 -3px; box-shadow: 0 0 0 1px rgba(181, 120, 42, .4), 0 18px 32px -24px rgba(26, 13, 5, .5); }
+}
+@media (prefers-reduced-motion: reduce) { .post h2::after { animation: none; } .post .qa summary::after { transition: none; } }
+@media (max-width: 760px) {
+  .post h2 { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); padding: 26px var(--gutter) 24px; border-radius: 0; }
+  .post .pcard { padding: 20px 18px 20px 22px; }
+  .post .say { padding-left: 18px; }
+}
+.post > hr:has(+ h2) { display: none; }   /* the band's brass edge is the break: no second rule above it */
+/* an industry's why (17 Nov evening): heading and lead on the left, the rest beside it on a cream note with a brass edge */
+.ind-body .why-head, .case-body .why-head { align-items: end; }
+.ind-body .why-head h2, .case-body .why-head h2 { margin-bottom: 26px; }
+.ind-body .why-more, .case-body .why-more { position: relative; padding: 26px 28px 24px 30px; background: var(--cream); border-radius: 4px; box-shadow: 0 0 0 1px rgba(26, 13, 5, .06); }
+.ind-body .why-more::before, .case-body .why-more::before { content: ""; position: absolute; left: 0; top: 20px; bottom: 20px; width: 3px; background: var(--brass); border-radius: 2px; }
+.ind-body .why-more p + p, .case-body .why-more > * + * { margin-top: 14px; }
+.about-body .band .why-more { background: var(--paper); }
+.ind-body .why-more .other, .case-body .why-more .other { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(26, 13, 5, .12); }
+@media (max-width: 760px) { .ind-body .why-head, .case-body .why-head { gap: 22px; } .ind-body .why-more, .case-body .why-more { padding: 22px 18px 20px 22px; } }
+/* a post's callout comes in as its brass rule draws down, then the line settles (backlog F, 17 Nov late); wired only
+   without reduced motion, so the rule simply stands there otherwise */
+.post .say.rv-say { border-left-color: transparent; background: linear-gradient(var(--brass), var(--brass)) 0 0 / 3px 0% no-repeat;
+  transition: background-size .9s cubic-bezier(.2, .8, .2, 1) .1s, opacity .7s ease, translate .8s cubic-bezier(.2, .8, .2, 1); opacity: .25; translate: 0 10px; }
+.post .say.rv-say.in { background-size: 3px 100%; opacity: 1; translate: none; }

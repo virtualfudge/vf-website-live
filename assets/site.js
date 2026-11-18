@@ -255,15 +255,37 @@
     return (b[1] || "#start") === "#start" ? btn(b) + BOOK : btn(b);
   }
   function paras(list, lead) { return (list || []).map(function (p, k) { return "<p" + (k || !lead ? "" : ' class="lead"') + ">" + esc(p) + "</p>"; }).join(""); }
+  // a long paragraph read as a wall (Josh, 11 Nov): cut it into shorter ones at its own sentence ends, nearest the middle,
+  // every word kept in its order (Vemir: same words, new layout). Only over 60 words, and each part keeps 18 or more
+  // A post's paragraph holds VF's links and emphasis (html): there it is cut only outside a tag, and its words are counted
+  // without the tags
+  function chunk(p, html) {
+    var words = function (s) { return (html ? s.replace(/<[^>]+>/g, "") : s).split(/\s+/).filter(Boolean).length; }, n = words(p);
+    if (n <= 60) return [p];
+    var re = html ? /[.!?][”"’)]?(?:<\/(?:em|strong|b|i)>)?\s+(?=[A-Z“"‘(0-9]|<(?:a|em|strong|b|i)\b)/g : /[.!?][”"’)]?\s+(?=[A-Z“"‘(0-9])/g, m, best = -1, bestD = 1e9;
+    while ((m = re.exec(p))) {
+      var cut = m.index + m[0].length, before = p.slice(0, m.index + 1), head = p.slice(0, cut);
+      if (/\b(e\.g|i\.e|vs|Dr|Mr|Ms|St|U\.S|etc|No|Inc|Co|[A-Z])\.$/i.test(before)) continue;
+      if (html && ((head.match(/<(?:a|em|strong|b|i|span|sup|code)\b/g) || []).length !== (head.match(/<\/(?:a|em|strong|b|i|span|sup|code)>/g) || []).length || /<[^>]*$/.test(head))) continue;
+      var a = words(head);
+      if (a < 18 || n - a < 18) continue;
+      if (Math.abs(a - n / 2) < bestD) { bestD = Math.abs(a - n / 2); best = cut; }
+    }
+    if (best < 0) return [p];
+    return chunk(p.slice(0, best).replace(/\s+$/, ""), html).concat(chunk(p.slice(best), html));
+  }
+  function parasShort(list, lead) { var out = "", k = 0; (list || []).forEach(function (p) { chunk(p).forEach(function (c) { out += "<p" + (k++ || !lead ? "" : ' class="lead"') + ">" + esc(c) + "</p>"; }); }); return out; }
+  // VF's points as cards: [title, text] each, its text in short paragraphs
+  function tiles(items, cls) { return '<div class="three tiles ' + cls + '">' + items.map(function (i) { return "<div><h3>" + esc(i[0]) + "</h3>" + parasShort([i[1]]) + "</div>"; }).join("") + "</div>"; }
   // VF's run-in heads ("Fewer Returns: …", "Manufacturing & Automotive: …") stay bold, as on its pages
   function runIn(p) { var m = /^([^:.]{3,40}): (.+)$/.exec(p); return m ? "<strong>" + esc(m[1]) + ":</strong> " + esc(m[2]) : esc(p); }
-  function points(list) { return (list || []).map(function (p, k) { return "<p" + (k ? "" : ' class="lead"') + ">" + (k ? runIn(p) : esc(p)) + "</p>"; }).join(""); }
+  function points(list) { return (list || []).map(function (p, k) { return k ? "<p>" + runIn(p) + "</p>" : chunk(p).map(function (c, j) { return "<p" + (j ? "" : ' class="lead"') + ">" + esc(c) + "</p>"; }).join(""); }).join(""); }   // a first point over 60 words in two, at its own sentence end
   function grid(items) { return '<div class="three">' + items.map(function (i) { return "<div><h3>" + esc(i[0]) + "</h3><p>" + esc(i[1]) + "</p></div>"; }).join("") + "</div>"; }
   function sec(inner, cls) { return '<section class="block-sec' + (cls ? " " + cls : "") + '">' + inner + "</section>"; }
   function faqHtml(f) {
     if (!f || !f.items || !f.items.length) return "";
     return sec("<h2>" + esc(f.title || "FAQ") + "</h2>" + (f.text ? '<p class="lead">' + esc(f.text) + "</p>" : "") +
-      '<dl class="faq">' + f.items.map(function (q) { return "<dt>" + esc(q[0]) + "</dt><dd>" + q[1].split("\n").map(function (a, k) { return "<p>" + (k ? runIn(a) : esc(a)) + "</p>"; }).join("") + "</dd>"; }).join("") + "</dl>");
+      '<dl class="faq">' + f.items.map(function (q) { return "<dt>" + esc(q[0]) + "</dt><dd>" + q[1].split("\n").map(function (a, k) { return k ? "<p>" + runIn(a) + "</p>" : parasShort([a]); }).join("") + "</dd>"; }).join("") + "</dl>");
   }
   // VF's banner under every page, said for this site: its homepage is the story of the block
   function story(s) {
@@ -328,16 +350,23 @@
   function pageCase(c) {
     var p = V.projects[c.slug], body = "";
     if (CASE_FILM[c.slug]) body += film(CASE_FILM[c.slug], "See it in action", "");
-    body += sec("<h2>" + esc(p.about.title) + "</h2>" + paras(p.about.text, true) + grid(p.about.items));
-    if (p.features && p.features.items.length) body += sec("<h2>" + esc(p.features.title) + '</h2><div class="three">' + p.features.items.map(function (f) {
-      var i = f.indexOf(": "); return i > 0 ? "<div><h3>" + esc(f.slice(0, i)) + "</h3><p>" + esc(f.slice(i + 2)) + "</p></div>" : "<div><p>" + esc(f) + "</p></div>"; }).join("") + "</div>");
+    // Josh, 11 Nov: no page should read as a wall. Same words, as on About us and the industries (17 Nov evening): the
+    // challenge, the solution and the result as cards under a brass AR corner on a cream band, the features as cards,
+    // the results on a band, long paragraphs cut at their own sentence ends
+    body += sec("<h2>" + esc(p.about.title) + "</h2>" + parasShort(p.about.text, true) + tiles(p.about.items, "answer"), "band");
+    if (p.features && p.features.items.length) body += sec("<h2>" + esc(p.features.title) + '</h2><div class="three tiles feats">' + p.features.items.map(function (f) {
+      var i = f.indexOf(": "); return i > 0 ? "<div><h3>" + esc(f.slice(0, i)) + "</h3>" + parasShort([f.slice(i + 2)]) + "</div>" : "<div>" + parasShort([f]) + "</div>"; }).join("") + "</div>");
     if (p.banner && p.banner.title) body += sec("<h2>" + esc(p.banner.title) + "</h2>" + paras(p.banner.text, true) + '<div class="acts">' + pair(p.banner.btn) + "</div>", "tagline");
     if (c.live) body += liveSection([c.live], "Try it live", "", false);
     if (p.results && p.results.title) {
       var rb = p.results.btn, to = /marketing/i.test(rb) ? "#for-events" : /CPG/.test(rb) ? "#for-cpg" : /retail/i.test(rb) ? "#for-retail" : "#industries";
-      body += sec("<h2>" + esc(p.results.title) + "</h2>" + paras(p.results.text, true) +
-        (p.results.statement.length && p.results.statement.every(function (t) { return t.length < 60 && t.indexOf(".") < 0; })
-          ? '<ul class="plainlist points">' + p.results.statement.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>" : paras(p.results.statement)) + (rb ? '<p><a class="link" href="' + to + '">' + esc(rb) + "</a></p>" : ""));
+      // the heading and lead on the left, the rest beside them as a note (17 Nov evening: three plain paragraphs before)
+      var resP = parasShort(p.results.text, true), resCut = resP.indexOf("</p>") + 4;
+      var resMore = resP.slice(resCut) + (p.results.statement.length && p.results.statement.every(function (t) { return t.length < 60 && t.indexOf(".") < 0; })
+          ? '<ul class="plainlist points">' + p.results.statement.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>" : parasShort(p.results.statement));
+      var resLink = rb ? '<p class="other"><a class="link" href="' + to + '">' + esc(rb) + "</a></p>" : "";
+      body += sec(resMore ? '<div class="split why-head"><div><h2>' + esc(p.results.title) + "</h2>" + resP.slice(0, resCut) + '</div><div class="why-more">' + resMore + resLink + "</div></div>"
+        : "<h2>" + esc(p.results.title) + "</h2>" + resP + resLink.replace(' class="other"', ""), "band");   // nothing beyond the lead: as before
     }
     if (p.tech && p.tech.items.length) body += sec("<h2>" + esc(p.tech.title) + "</h2>" + (p.tech.text ? '<p class="lead">' + esc(p.tech.text) + "</p>" : "") +
       (p.tech.preview ? "<p>" + esc(p.tech.preview) + "</p>" : "") + '<ul class="data">' + p.tech.items.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>");
@@ -350,7 +379,7 @@
     var top = hero({ title: esc(p.hero.title), lede: esc(p.hero.text), lede2: p.hero.extra ? esc(p.hero.extra) : "", acts: pair(p.hero.btn) + '<a class="link" href="#work">All projects</a>' });
     if (CASE_FILM[c.slug]) top = top.replace(/<\/section>$/, heroClip(c.slug) + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo">');
     return top +
-      '<div class="page-body">' + body + story(p.story && p.story.title ? p.story : null) + closing() + "</div>";
+      '<div class="page-body about-body ind-body case-body">' + body + story(p.story && p.story.title ? p.story : null) + closing() + "</div>";
   }
 
   function nicheName(k) { return (IND[k] && IND[k].name) || k; }
@@ -384,7 +413,6 @@
     education: [[["gortana", "The Living Hologram: the founder, life-like, standing on a business card.", ["#work-gortana", "The project"]], ["store-walk", "Walking through the Noyah Cosmetics virtual store.", ["#work-noyah-store", "The project"]],
                  ["mirror-live", "A live overlay that follows the person in the mirror.", ["#work-nios-mirror", "The project"]]], "Recorded live from our projects", ""]
   };
-  // a list of VF's points beside another: the challenges, and what Virtual Fudge builds for them
   // a strip of real photos from the show floor partway down an industry page, where its words run longest (Vemir, 28 Oct:
   // "break up text walls"): people meeting VF's AR at its booths, captioned with the shows they were taken at
   var PLATE = {
@@ -401,15 +429,20 @@
     return '<figure class="block-sec plate">' + gallery(found.map(function (f) { return f[0]; })) +
       "<figcaption>On the show floor at " + shows.join(" and ") + '. <a class="link" href="#shows">See the shows</a></figcaption></figure>';
   }
-  function pairList(items) { return '<ul class="pair-list">' + items.map(function (i) { return "<li><h3>" + esc(i[0]) + "</h3><p>" + esc(i[1]) + "</p></li>"; }).join("") + "</ul>"; }
   // an industry: VF's page for it, in purposeful blocks (Josh, 23 Oct; Vemir, 27 Oct: "make those sections better"): why AR,
   // the challenges beside the answer, the proof, how it launches, one call to action, examples and questions
   function pageIndustry(id) {
     var d = IND[id] || {}, v = V.industries[id], body = "";
     if (!v) return hero({ title: esc(nicheName(id)) }) + '<div class="page-body">' + closing() + "</div>";
-    body += sec("<h2>" + esc(v.why.title) + "</h2>" + paras(v.why.text, true) + '<p class="other">' + esc(v.why.other) + ' <a class="link" href="#industries">' + esc((v.why.btn || ["See all industries"])[0]) + "</a></p>");
-    body += sec('<div class="pair"><div class="pair-ask"><h2>' + esc(v.challenges.title) + "</h2>" + paras(v.challenges.text, true) + pairList(v.challenges.items) +
-      '</div><div class="pair-answer"><h2>' + esc(v.solution.title) + "</h2>" + paras(v.solution.text, true) + pairList(v.solution.items) + "</div></div>", "pair-sec");
+    // Josh, 11 Nov: the words are good but the page reads as a wall. Same words, as on About us (17 Nov): the challenges as
+    // numbered cards on a cream band, what VF builds as cards beside its own short paragraphs, long paragraphs cut at their
+    // own sentence ends, the results and the steps on bands
+    // the why: its heading and lead on the left, the rest beside it as a note (17 Nov evening: three plain paragraphs before)
+    var whyP = parasShort(v.why.text, true), whyCut = whyP.indexOf("</p>") + 4;
+    body += sec('<div class="split why-head"><div><h2>' + esc(v.why.title) + "</h2>" + whyP.slice(0, whyCut) + '</div><div class="why-more">' + whyP.slice(whyCut) +
+      '<p class="other">' + esc(v.why.other) + ' <a class="link" href="#industries">' + esc((v.why.btn || ["See all industries"])[0]) + "</a></p></div></div>");
+    body += sec("<h2>" + esc(v.challenges.title) + "</h2>" + parasShort(v.challenges.text, true) + tiles(v.challenges.items, "problem row"), "band ask-sec");
+    body += sec('<div class="split answer-head"><h2>' + esc(v.solution.title) + "</h2><div>" + parasShort(v.solution.text, true) + "</div></div>" + tiles(v.solution.items, "answer"), "answer-sec");
     if (IND_FILM[id] && IND_FILM[id].length > 2) body += film(IND_FILM[id][0], IND_FILM[id][1], IND_FILM[id][2]);
     var late = !(IND_FILM[id] && IND_FILM[id].length > 2);   // the film comes after the examples: the photos go before the results
     if (late) body += plate(PLATE[id]);
@@ -421,9 +454,9 @@
       body += sec("<h2>" + esc(MED.researchTitle) + '</h2><p class="lead">' + esc(MED.research) + '</p><ul class="cites">' +
         MED.cites.map(function (c) { return "<li>" + esc(c[0]) + ' <a href="' + c[1] + '" target="_blank" rel="noopener">' + c[2] + NEWTAB + "</a></li>"; }).join("") + "</ul>");
     }
-    if (v.results.items.length) body += sec("<h2>" + esc(v.results.title) + "</h2>" + paras(v.results.text, true) + '<ul class="figures">' + v.results.items.map(function (r) {
+    if (v.results.items.length) body += sec("<h2>" + esc(v.results.title) + "</h2>" + parasShort(v.results.text, true) + '<ul class="figures">' + v.results.items.map(function (r) {
       return '<li>' + (r[0] ? '<span class="fig">' + esc(r[0]) + "</span>" : "") + '<span class="fig-what">' + esc(r[1]) + '</span><span class="fig-src">Source: ' +
-        (r[3] ? '<a href="' + esc(r[3]) + '" target="_blank" rel="noopener">' + esc(r[2]) + NEWTAB + "</a>" : esc(r[2])) + "</span></li>"; }).join("") + "</ul>");
+        (r[3] ? '<a href="' + esc(r[3]) + '" target="_blank" rel="noopener">' + esc(r[2]) + NEWTAB + "</a>" : esc(r[2])) + "</span></li>"; }).join("") + "</ul>", "band");
     var f = v.featured;
     if (f.title) body += sec("<h2>" + esc(f.title) + "</h2>" + points(f.text) +
       (f.blockTitle ? "<h3 class=\"feat-ask\">" + esc(f.blockTitle) + "</h3>" : "") +
@@ -431,14 +464,15 @@
     if (IND_FILM[id] && IND_FILM[id].length < 3) body += film(IND_FILM[id][0], IND_FILM[id][1], "") + (id === "events" ? '<p class="after-film"><a class="link" href="#shows">See the shows we exhibited at</a></p>' : "");
     if (!late) body += plate(PLATE[id]);
     if (v.steps) body += sec("<h2>" + esc(v.steps.title) + "</h2>" + paras(v.steps.text, true) + '<ol class="steps three-steps">' + v.steps.items.map(function (s, k) {
-      return '<li><span class="step-no">Step ' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>");
+      return '<li><span class="step-no">Step ' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>", "band");
     body += sec("<h2>" + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + pair(v.banner.btn) + "</div>", "tagline");   // the page's one call to action, after how it launches
     body += cards(d.cases || [], "Example projects", "");
     body += faqHtml(v.faq);
     body += sec("<h2>" + esc(v.also) + '</h2><ul class="niches">' + ALSO.filter(function (a) { return a[1] !== id; }).map(function (a) {
       return '<li><a href="#for-' + a[1] + '">' + esc(a[0]) + "</a></li>"; }).join("") + "</ul>");
     body += story(v.story);   // the banner to the homepage story comes last before the form, as on the project pages
-    return hero({ num: d.num, ch: d.num ? chTitle(id) : "", title: esc(v.hero.title), lede: esc(v.hero.text), acts: pair(v.hero.btn) }) + '<div class="page-body">' + body + closing() + "</div>";
+    var lede = chunk(v.hero.text);   // a hero line over 60 words (museums, entertainment, real estate) in two, at its own sentence end
+    return hero({ num: d.num, ch: d.num ? chTitle(id) : "", title: esc(v.hero.title), lede: esc(lede[0]), lede2: lede[1] ? esc(lede[1]) : "", acts: pair(v.hero.btn) }) + '<div class="page-body about-body ind-body">' + body + closing() + "</div>";
   }
   function pageIndustries() {
     return hero({ title: "Industries", lede: esc(HOME.agnostic), acts: QUOTE + BOOK }) +
@@ -593,7 +627,7 @@
   // one post: VF's words as published, in this site's reading column; links out open in a new tab
   function block(b) {
     switch (b[0]) {
-      case "p": return "<p>" + b[1] + "</p>";
+      case "p": return "<p>" + chunk(b[1], true).join("</p><p>") + "</p>";   // a long paragraph in shorter ones, at its own sentence ends (Josh, 11 Nov)
       case "h": return "<h" + b[1] + ">" + b[2] + "</h" + b[1] + ">";
       case "ul": case "ol": return "<" + b[0] + ">" + b[1].map(function (i) { return "<li>" + i + "</li>"; }).join("") + "</" + b[0] + ">";
       case "hr": return '<hr>';
@@ -674,7 +708,85 @@
       if (best < 0) break;
       put[best] = aside(list[k]); last = best;
     }
-    return p.body.map(function (b, i) { return (put[i] || "") + (i === opener ? block(b).replace("<p>", '<p class="opener">') : block(b)); }).join("");
+    return postShape(p.body, put, opener);
+  }
+  // a long post without the wall of text (Vemir, 17 Nov: none anywhere): the same blocks in the same order, set differently.
+  // Every h2 stands on a cream band (a numbered one shows its number large in brass); two or more paragraphs in a row that
+  // each open on a bold lead or a number become cards; a FAQ's questions open and close; and in a section of three
+  // paragraphs or more its shortest plain one (or one set all in bold) stands large as a callout (two in six or more). Not one word changes.
+  function plainOf(h) { return h.replace(/<[^>]+>/g, ""); }
+  function wordsOf(h) { return plainOf(h).split(/\s+/).filter(Boolean).length; }
+  function leadOf(b) {
+    if (!b || b[0] !== "p" || wordsOf(b[1]) < 15) return "";
+    if (/^(<strong>)?\d+\.\s/.test(b[1])) return "num";
+    return /^<strong>[^<]+<\/strong>\s*[^\s<]/.test(b[1]) ? "lead" : "";
+  }
+  function hNum(h) { return h.replace(/^(\d+\.)(\s)/, '<span class="hn">$1</span>$2'); }
+  function postShape(body, put, opener) {
+    var say = {}, card = {}, qa = {}, faq = false, i, k;
+    // the sections: from the top, then from each h2
+    var starts = [0]; body.forEach(function (b, j) { if (b[0] === "h" && b[1] === 2) starts.push(j); });
+    starts.push(body.length);
+    for (k = 0; k + 1 < starts.length; k++) {
+      var from = starts[k], to = starts[k + 1], ps = [], cand = [];
+      var isFaq = body[from][0] === "h" && /frequently asked|^faq/i.test(plainOf(body[from][2]));
+      for (i = from; i < to; i++) {
+        var b = body[i];
+        if (isFaq && b[0] === "hr") break;   // a FAQ ends at its rule: the closing call to act stays as it is
+        if (isFaq && b[0] === "p") {
+          var m = b[1].match(/^<strong>([^<]+\?)<\/strong>\s*([\s\S]+)$/) || b[1].match(/^([^<]{5,200}?\?)\s+([\s\S]+)$/);
+          if (m) { qa[i] = [m[1], m[2]]; continue; }
+        }
+        if (isFaq && b[0] === "h" && b[1] > 2 && /\?$/.test(plainOf(b[2])) && body[i + 1] && body[i + 1][0] === "p") {
+          var j2 = i + 1, ans = []; while (j2 < to && body[j2][0] === "p") { ans.push(j2); j2++; }
+          qa[i] = [b[2], ans]; ans.forEach(function (a) { qa[a] = "in"; }); i = j2 - 1; continue;
+        }
+        if (b[0] !== "p") continue;
+        ps.push(i);
+        var t = b[1], w = wordsOf(t), all = /^<strong>(?:(?!<\/strong>)[\s\S])*<\/strong>$/.test(t);
+        if (i === opener || ps.length === 1 || /<a\b/.test(t) || /[?:]$/.test(plainOf(t).trim()) || /^(Book|Sign up|Published|Virtual Fudge is)/.test(plainOf(t))) continue;
+        if (leadOf(b) || w < 6 || w > 30) continue;
+        cand.push([all ? 0 : w, i]);
+      }
+      // one callout in a section of three paragraphs or more, two in one of six or more (never side by side)
+      cand.sort(function (x, y) { return x[0] - y[0]; });
+      var want = ps.length >= 6 ? 2 : ps.length >= 3 ? 1 : 0, got = [];
+      cand.forEach(function (c) { if (got.length < want && got.every(function (g) { return Math.abs(ps.indexOf(g) - ps.indexOf(c[1])) > 1; })) got.push(c[1]); });
+      got.forEach(function (g) { say[g] = 1; });
+    }
+    // runs of lead or numbered paragraphs
+    for (i = 0; i < body.length; i++) {
+      var kind = leadOf(body[i]);
+      if (!kind || qa[i]) continue;
+      var e = i; while (e + 1 < body.length && leadOf(body[e + 1]) === kind && !qa[e + 1] && !put[e + 1]) e++;
+      if (e > i) { for (k = i; k <= e; k++) card[k] = kind; card[i] += " first"; card[e] += " last"; }
+      i = e;
+    }
+    var out = [], inFaq = false;
+    body.forEach(function (b, j) {
+      if (qa[j] === "in") return;
+      var html;
+      if (qa[j]) {
+        html = '<details class="qa"><summary>' + qa[j][0] + "</summary>" +
+          (typeof qa[j][1] === "string" ? block(["p", qa[j][1]]) : qa[j][1].map(function (a) { return block(body[a]); }).join("")) + "</details>";
+        if (!inFaq) { html = '<div class="post-faq">' + html; inFaq = true; }
+        var nx = j + 1; while (qa[nx] === "in") nx++;
+        if (!qa[nx]) { html += "</div>"; inFaq = false; }
+        out.push((put[j] || "") + html); return;
+      }
+      if (b[0] === "h") html = "<h" + b[1] + ">" + hNum(b[2]) + "</h" + b[1] + ">";
+      else if (say[j]) html = '<p class="say">' + b[1] + "</p>";
+      else html = j === opener ? block(b).replace("<p>", '<p class="opener">') : block(b);
+      if (card[j]) {
+        var c = card[j];
+        if (c.indexOf("num") === 0) html = html.replace(/^<p>(<strong>)?(\d+\.)/, '<p>$1<span class="pn">$2</span>');
+        html = '<div class="pcard">' + html + "</div>";
+        if (/first/.test(c)) html = '<div class="pcards' + (c.indexOf("num") === 0 ? " num" : "") + '">' + html;
+        if (/last/.test(c)) html += "</div>";
+      }
+      out.push((put[j] || "") + html);
+    });
+    return out.join("");
   }
   function pagePost(p) {
     var body = postBody(p).replace(/<a href="(https?:\/\/[^"]+)">([\s\S]*?)<\/a>/g, '<a href="$1" target="_blank" rel="noopener">$2' + NEWTAB + "</a>");
@@ -1175,16 +1287,30 @@
     if (revealIo) { revealIo.disconnect(); revealIo = null; }
     if (REDUCE || !("IntersectionObserver" in window)) return;
     revealIo = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); revealIo.unobserve(e.target); } }); }, { rootMargin: "0px 0px -10% 0px" });
-    root.querySelectorAll(".page-body .three, .page-body .steps, .page-body .data, .page-body .team, .page-body .pair-list, .page-body .four, .page-body .figures").forEach(function (g) {
+    root.querySelectorAll(".page-body .three, .page-body .steps, .page-body .data, .page-body .team, .page-body .four, .page-body .figures, .post .pcards").forEach(function (g) {
       g.classList.add("rv"); [].forEach.call(g.children, function (c, k) { c.style.setProperty("--i", k); }); revealIo.observe(g);
     });
     root.querySelectorAll(".page-body .clip-frame, .page-body .g, .page-body .press-clip, .ar-photo-in").forEach(function (m) {
       if (!m.querySelector(".ar-rv-lock") && !m.classList.contains("ar-photo-in")) { var l = document.createElement("span"); l.className = "ar-rv-lock"; l.setAttribute("aria-hidden", "true"); l.innerHTML = '<span class="ar-rv-scan"></span>'; m.appendChild(l); }
       m.classList.add("ar-rv"); revealIo.observe(m);
     });
+    root.querySelectorAll(".post .say").forEach(function (q) { q.classList.add("rv-say"); revealIo.observe(q); });   // a callout's brass rule draws down as it comes in (backlog F)
   }
   // About's window on the old story: where the window stands in the screen is how far the scene has played (0 as its top comes
   // in under the screen, 1 as its bottom leaves over the top), so scrolling back plays it back. Off screen it does nothing
+  // a post's reading line (backlog F, 17 Nov evening): how far down the post's own text the window has come, 0 to 1; one
+  // read per frame at most, only while a post is open
+  var readStop = null;
+  function wireRead(root) {
+    if (readStop) { readStop(); readStop = null; }
+    var body = $(".post-body", root); if (!body) return;
+    var line = document.createElement("div"); line.className = "read-line"; line.setAttribute("aria-hidden", "true"); document.body.appendChild(line);   // over the header, outside the page's own layer
+    var queued = false, draw = function () { queued = false; var r = body.getBoundingClientRect(), span = r.height - innerHeight;
+      line.style.transform = "scaleX(" + (span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 1).toFixed(4) + ")"; };
+    var on = function () { if (!queued) { queued = true; requestAnimationFrame(draw); } };
+    window.addEventListener("scroll", on, { passive: true }); window.addEventListener("resize", on); draw();
+    readStop = function () { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); if (line.parentNode) line.parentNode.removeChild(line); };
+  }
   var peekStop = null;
   function wirePeek(root) {
     if (peekStop) { peekStop(); peekStop = null; }
@@ -1392,7 +1518,7 @@
       pages.hidden = false; root.classList.add("on-page"); root.classList.toggle("page-plain", !r.stage);
       if (skip) skip.textContent = "Skip to the content";
       wireGalleries(pages);
-      wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages);
+      wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages);
       document.title = h === landRoute && location.pathname === landPath ? landTitle : pageTitle(h, r);
       if (window.VFStage) window.VFStage.page(r.stage || false);
       window.scrollTo({ top: 0, behavior: "instant" });
@@ -1402,7 +1528,7 @@
     }
     if (current !== null || first) {
       unwireClips(pages);
-      pages.hidden = true; pages.innerHTML = ""; wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); root.classList.remove("on-page", "page-plain");
+      pages.hidden = true; pages.innerHTML = ""; wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages); root.classList.remove("on-page", "page-plain");
       if (skip) skip.textContent = skipHome;
       document.title = baseTitle;
       if (window.VFStage) window.VFStage.page(null);
