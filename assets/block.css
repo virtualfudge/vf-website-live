@@ -3,7 +3,8 @@
    left third and the object owns the rest; on a phone the object takes the upper 60% and the verse sits below.
    One theme on purpose: the page is always paper (the block is the chocolate, the page the vanilla). */
 :root {
-  --espresso: #1A0D05;                    /* the ink */
+  --espresso: #1A0D05;
+  --choc: #4A2414;                        /* filled states (Vemir, 18 Nov: a better brown than brass): milk chocolate, from the logo's own browns; cream on it 11:1 */                    /* the ink */
   --cream: #F5EDD8;                       /* the vanilla the paper is made from */
   --paper: #FAF6EC;                       /* the page: cream taken halfway to white */
   --brass: #B5782A;                       /* the only light: focus ring, current index slice, hairlines (3.2:1 on paper) */
@@ -68,7 +69,7 @@ a { color: inherit; }
 .mark-logo svg { display: block; width: 100%; height: auto; }
 .book { display: inline-flex; align-items: center; min-height: 42px; padding: 0 18px; border: 1px solid var(--brass); color: var(--ink); text-decoration: none;
   font: 500 15px/1 var(--f-serif); background: rgba(250, 246, 236, .55); transition: background-color .2s ease, color .2s ease; }
-.book:hover { background: var(--brass); color: var(--espresso); }
+.book:hover { background: var(--choc); border-color: var(--choc); color: var(--cream); }
 /* the work, one step from anywhere: the case studies are what a buyer looks for first */
 .top-acts { display: flex; align-items: center; gap: 22px; }
 .top-link { padding: 12px 2px; color: var(--ink); text-decoration: none; font: 500 15px/1 var(--f-serif); border-bottom: 1px solid transparent; transition: border-color .2s ease; }
@@ -112,7 +113,7 @@ main { position: relative; z-index: 5; pointer-events: none; }
   font: 400 16px/1 var(--f-serif); border-radius: 0; transition: border-color .2s ease, box-shadow .2s ease; }
 ::placeholder { color: rgba(26, 13, 5, .6); opacity: 1; }   /* every field's hint: lighter than what you type, still 4.9:1 on paper (Firefox fades it by default) */
 .field input:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); }   /* the same 2px brass edge as every form field */
-.field button { min-height: 46px; padding: 0 18px; border: 1px solid var(--brass); background: var(--brass); color: var(--espresso); font: 600 15px/1 var(--f-serif); cursor: pointer; }
+.field button { min-height: 46px; padding: 0 18px; border: 1px solid var(--choc); background: var(--choc); color: var(--cream); font: 600 15px/1 var(--f-serif); cursor: pointer; }
 .field button:disabled { background: transparent; color: var(--ink-quiet); cursor: progress; }
 .sketching .field input { border-color: var(--ar-blue); box-shadow: 0 0 0 1px var(--ar-blue); }
 .sketch { margin-top: 34px; }
@@ -305,8 +306,8 @@ main { position: relative; z-index: 5; pointer-events: none; }
 .vf-tab:hover { background: rgba(181, 120, 42, .1); }
 .vf-tab-title { font: 500 20px/1.2 var(--f-serif); font-variation-settings: "opsz" 72; }
 .vf-tab-text { font: 400 14px/1.5 var(--f-serif); color: var(--ink-quiet); }
-.vf-tab[aria-pressed="true"] { background: var(--brass); color: var(--espresso); }
-.vf-tab[aria-pressed="true"] .vf-tab-text { color: var(--espresso); }
+.vf-tab[aria-pressed="true"] { background: var(--choc); border-color: var(--choc); color: var(--cream); }
+.vf-tab[aria-pressed="true"] .vf-tab-text { color: rgba(245, 237, 216, .86); }
 @media (max-width: 760px) { .vf-choose { grid-template-columns: minmax(0, 1fr); gap: 10px; } .vf-tab { padding: 16px 18px 18px; } }
 .vf-form h2 { margin-bottom: 14px; }
 .vf-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; margin: 28px 0 22px; max-width: 760px; }
@@ -321,7 +322,7 @@ main { position: relative; z-index: 5; pointer-events: none; }
 .vf-field input:focus, .vf-field select:focus, .vf-field textarea:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); }
 .vf-form .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 26px; }
 .vf-status { font: 400 15px/1.4 var(--f-serif); color: var(--ink-quiet); }
-.vf-alt { margin-top: 18px; }
+.vf-alt { margin-top: 30px; }
 .foot-news { margin-bottom: 6vh; }
 @media (max-width: 600px) { .vf-fields { grid-template-columns: minmax(0, 1fr); } }
 
@@ -352,7 +353,7 @@ main { position: relative; z-index: 5; pointer-events: none; }
 .vf-pill span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1px solid rgba(26, 13, 5, .3); border-radius: 999px;
   background: rgba(250, 246, 236, .6); font: 400 15px/1.2 var(--f-serif); color: var(--ink); transition: background-color .2s, border-color .2s; }
 .vf-pill:hover span { border-color: var(--brass); background: rgba(181, 120, 42, .08); }
-.vf-pill input:checked + span { border-color: var(--brass); background: var(--brass); color: var(--espresso); }
+.vf-pill input:checked + span { border-color: var(--choc); background: var(--choc); color: var(--cream); }
 .vf-pill input:focus-visible + span { outline: 2px solid var(--brass); outline-offset: 3px; }
 .vf-pill input[aria-invalid] + span { border-color: var(--brass); }
 .vf-sum { position: sticky; top: 124px; padding: 20px 22px 8px; background: var(--cream); border: 1px solid rgba(26, 13, 5, .1); }
@@ -1146,7 +1147,7 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 }
 /* the form's last step (17 Nov evening): "Or write to" stood flush under Submit (its 18 px was reset by a later rule); on a
    phone Submit spans the form and is a full tap target, the one thing to press at the end */
-.vf-final .vf-alt { margin-top: 18px; }
+.vf-final .vf-alt { margin-top: 30px; }
 @media (max-width: 760px) { .vf-final .acts .vf-send { flex: 1 1 100%; justify-content: center; text-align: center; min-height: 50px; display: inline-flex; align-items: center; } .vf-final .vf-status:empty { display: none; } }
 
 /* a long post without the wall of text (Vemir, 17 Nov: "no wall of text ANYWHERE"): the same words, set as a magazine sets
@@ -1174,21 +1175,21 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .post .pcards.num .pn { display: block; margin-bottom: 8px; font: 300 40px/1 var(--f-serif); font-variation-settings: "opsz" 144; color: var(--brass); }
 .post .pcards.num .pcard::before { content: none; }
 .post .post-faq { margin-top: 26px !important; border-top: 1px solid rgba(26, 13, 5, .16); }
-.post .qa { border-bottom: 1px solid rgba(26, 13, 5, .16); }
-.post .qa summary { position: relative; display: block; padding: 20px 46px 20px 0; cursor: pointer; list-style: none; font: 500 20px/1.35 var(--f-serif); font-variation-settings: "opsz" 48; color: var(--ink); }
-.post .qa summary::-webkit-details-marker { display: none; }
-.post .qa summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 14px; height: 14px; margin-top: -7px;
+:is(.post, .faq-list) .qa { border-bottom: 1px solid rgba(26, 13, 5, .16); }
+:is(.post, .faq-list) .qa summary { position: relative; display: block; padding: 20px 46px 20px 0; cursor: pointer; list-style: none; font: 500 20px/1.35 var(--f-serif); font-variation-settings: "opsz" 48; color: var(--ink); }
+:is(.post, .faq-list) .qa summary::-webkit-details-marker { display: none; }
+:is(.post, .faq-list) .qa summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 14px; height: 14px; margin-top: -7px;
   background: linear-gradient(var(--brass), var(--brass)) center / 100% 2px no-repeat, linear-gradient(var(--brass), var(--brass)) center / 2px 100% no-repeat; transition: transform .3s ease; }
-.post .qa[open] summary::after { transform: rotate(45deg); }
-.post .qa summary:hover { color: var(--brass); }
-.post .qa summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; }
-.post .qa > p { margin: 0 0 22px; }
-.post .qa > p + p { margin-top: .8em; }
+:is(.post, .faq-list) .qa[open] summary::after { transform: rotate(45deg); }
+:is(.post, .faq-list) .qa summary:hover { color: var(--brass); }
+:is(.post, .faq-list) .qa summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; }
+:is(.post, .faq-list) .qa > p { margin: 0 0 22px; }
+:is(.post, .faq-list) .qa > p + p { margin-top: .8em; }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .post .pcard { transition: opacity .6s ease calc(min(var(--i, 0), 9) * 80ms), transform .75s cubic-bezier(.2, .8, .2, 1) calc(min(var(--i, 0), 9) * 80ms), translate .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s; }   /* the reveal's fade kept beside the lift */
   .post .pcard:hover { translate: 0 -3px; box-shadow: 0 0 0 1px rgba(181, 120, 42, .4), 0 18px 32px -24px rgba(26, 13, 5, .5); }
 }
-@media (prefers-reduced-motion: reduce) { .post h2::after { animation: none; } .post .qa summary::after { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .post h2::after { animation: none; } :is(.post, .faq-list) .qa summary::after { transition: none; } }
 @media (max-width: 760px) {
   .post h2 { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); padding: 26px var(--gutter) 24px; border-radius: 0; }
   .post .pcard { padding: 20px 18px 20px 22px; }
@@ -1209,3 +1210,42 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .post .say.rv-say { border-left-color: transparent; background: linear-gradient(var(--brass), var(--brass)) 0 0 / 3px 0% no-repeat;
   transition: background-size .9s cubic-bezier(.2, .8, .2, 1) .1s, opacity .7s ease, translate .8s cubic-bezier(.2, .8, .2, 1); opacity: .25; translate: 0 10px; }
 .post .say.rv-say.in { background-size: 3px 100%; opacity: 1; translate: none; }
+
+/* 18 Nov (Vemir: no wall of text anywhere; lighter boxes or a moving background; "mix it up"). */
+/* FAQs on project and industry pages open and close, as the posts' do */
+.faq-list { max-width: 68ch; border-top: 1px solid rgba(26, 13, 5, .16); }
+.block-sec p + .faq-list, .block-sec h2 + .faq-list { margin-top: 30px; }
+.faq-list .qa > p:first-of-type { margin-top: 0; }
+.faq-list .qa > :last-child { margin-bottom: 24px; }
+.faq-list .qa p { max-width: 64ch; }
+/* a run of plain paragraphs in a post: a light panel with something moving behind the words */
+.post > .prun { position: relative; isolation: isolate; display: flow-root; margin-top: 1.6em; padding: clamp(22px, 3vw, 38px) clamp(20px, 3vw, 40px); border-radius: 6px; background: rgba(245, 237, 216, .55); box-shadow: 0 0 0 1px rgba(26, 13, 5, .05); overflow: hidden; }
+.post > .prun + * { margin-top: 1.6em; }
+.post .prun > p { position: relative; z-index: 1; }
+.post .prun > p + p { margin-top: 1.05em; }
+.prun::before { content: ""; position: absolute; inset: -44px; z-index: 0; background: radial-gradient(rgba(26, 13, 5, .085) 1px, transparent 1.6px) 0 0 / 22px 22px;
+  -webkit-mask: radial-gradient(120% 90% at 85% 15%, #000, transparent 75%); mask: radial-gradient(120% 90% at 85% 15%, #000, transparent 75%); animation: prunDrift 38s linear infinite; }
+.prun::after { content: ""; position: absolute; z-index: 0; width: 60%; aspect-ratio: 1; right: -18%; top: -30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(181, 120, 42, .16), transparent); animation: bandLight 26s ease-in-out infinite alternate; }
+@keyframes prunDrift { to { transform: translate(22px, 44px); } }
+@media (max-width: 760px) { .post > .prun { margin-left: -6px; margin-right: -6px; padding: 22px 18px; } }
+@media (prefers-reduced-motion: reduce) { .prun::before, .prun::after { animation: none; } }
+.prun-dots-l::before { -webkit-mask: radial-gradient(120% 90% at 15% 85%, #000, transparent 75%); mask: radial-gradient(120% 90% at 15% 85%, #000, transparent 75%); }
+.prun-dots-l::after { right: auto; left: -18%; top: auto; bottom: -30%; }
+/* the blog's hero: an open book melting into fudge (drawn here, in the logo's browns and corners) */
+.melt { display: flex; justify-content: center; align-items: center; }
+.melt-in { width: min(100%, 420px); margin: 0 auto; }
+.book-drip { display: block; width: 100%; height: auto; }
+.bd-run { transform-box: fill-box; transform-origin: 50% 0; animation: bdRun var(--d) ease-in-out var(--dl) infinite alternate; }
+.bd-drop { animation: bdDrop var(--d) ease-in-out var(--dl) infinite alternate; }
+.bd-off .bd-run, .bd-off .bd-drop { animation-play-state: paused; }
+@keyframes bdRun { from { transform: scaleY(var(--a)); } to { transform: scaleY(1); } }
+@keyframes bdDrop { from { transform: translateY(calc(var(--L) * var(--a))); } to { transform: translateY(var(--L)); } }
+@media (prefers-reduced-motion: reduce) { .bd-run, .bd-drop { animation: none; } }
+@media (max-width: 860px) { .melt-in { width: min(64%, 300px); } }
+.vf-file-hint { margin: 10px 0 0; padding: 12px 16px; border-left: 3px solid var(--brass); background: rgba(245, 237, 216, .7); font: 400 15px/1.5 var(--f-serif); color: var(--ink); }
+.vf-file-hint[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .bd-drop { transform: translateY(var(--L)); } }
+/* the quote and careers tops: a line drawing turning in the empty space beside the words (from VF's decks; never over text) */
+.page-hero-start { position: relative; }
+.start-art { position: absolute; right: max(var(--gutter), calc(50vw - 640px)); top: 104px; bottom: 16px; width: min(34vw, 440px); height: auto; pointer-events: none; }
+@media (max-width: 1000px) { .start-art { display: none; } }

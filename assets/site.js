@@ -285,7 +285,7 @@
   function faqHtml(f) {
     if (!f || !f.items || !f.items.length) return "";
     return sec("<h2>" + esc(f.title || "FAQ") + "</h2>" + (f.text ? '<p class="lead">' + esc(f.text) + "</p>" : "") +
-      '<dl class="faq">' + f.items.map(function (q) { return "<dt>" + esc(q[0]) + "</dt><dd>" + q[1].split("\n").map(function (a, k) { return k ? "<p>" + runIn(a) + "</p>" : parasShort([a]); }).join("") + "</dd>"; }).join("") + "</dl>");
+      '<div class="faq-list">' + f.items.map(function (q) { return '<details class="qa"><summary>' + esc(q[0]) + "</summary>" + q[1].split("\n").map(function (a, k) { return k ? "<p>" + runIn(a) + "</p>" : parasShort([a]); }).join("") + "</details>"; }).join("") + "</div>");
   }
   // VF's banner under every page, said for this site: its homepage is the story of the block
   function story(s) {
@@ -619,8 +619,13 @@
       (p.hero ? '<span class="post-pic"><img src="' + p.hero[0] + cardSrcset(p, lead) + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="" loading="' + (lead ? "eager" : "lazy") + '" decoding="async"></span>' : "") +
       '<span class="post-text"><span class="post-meta">' + postMeta(p) + '</span><span class="post-title">' + esc(p.title) + '</span><span class="post-line">' + esc(p.desc) + "</span></span></a></li>";
   }
+  // the blog's picture (Vemir, 18 Nov: something to read, dripping, in the brand; not the logo): an open book in VF's
+  // chocolate, its fudge running off the bottom edge in slow drips that stay joined to it, inside the logo's four corners
+  var BOOK_DRIP = '<svg class="book-drip" viewBox="0 0 400 480" aria-hidden="true" focusable="false"><defs><linearGradient id="bdG" gradientUnits="userSpaceOnUse" x1="24" y1="0" x2="376" y2="0"><stop offset="0" stop-color="#240d02"/><stop offset=".35" stop-color="#7a4422"/><stop offset=".5" stop-color="#8d532b"/><stop offset=".65" stop-color="#7a4422"/><stop offset="1" stop-color="#240d02"/></linearGradient><filter id="bdGoo" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10" result="g"/><feComposite in="SourceGraphic" in2="g" operator="atop"/></filter></defs><g class="bd-corners" fill="none" stroke="#1A0D05" stroke-width="4"><path d="M6 46V6h40"/><path d="M354 6h40v40"/><path d="M6 434v40h40"/><path d="M354 474h40v-40"/></g><g class="bd-fudge" filter="url(#bdGoo)" fill="url(#bdG)"><path d="M24 112 Q112 88 200 116 Q288 88 376 112 L376 318 Q288 296 200 324 Q112 296 24 318 Z"/><g style="--a:0.5;--L:64px;--d:7.6s;--dl:0s"><rect class="bd-run" x="44.5" y="304.6" width="11" height="64" rx="5.5"/><circle class="bd-drop" cx="50" cy="304.6" r="9.0"/></g><g style="--a:0.32;--L:132px;--d:9.2s;--dl:-2.4s"><rect class="bd-run" x="90.5" y="300.4" width="13" height="132" rx="6.5"/><circle class="bd-drop" cx="97" cy="300.4" r="10.7"/></g><g style="--a:0.45;--L:82px;--d:7.0s;--dl:-4.1s"><rect class="bd-run" x="137.0" y="302.9" width="8" height="82" rx="4.0"/><circle class="bd-drop" cx="141" cy="302.9" r="6.6"/></g><g style="--a:0.3;--L:150px;--d:10.4s;--dl:-1.2s"><rect class="bd-run" x="206.0" y="312.1" width="14" height="150" rx="7.0"/><circle class="bd-drop" cx="213" cy="312.1" r="11.5"/></g><g style="--a:0.42;--L:96px;--d:8.0s;--dl:-3.4s"><rect class="bd-run" x="254.5" y="302.9" width="9" height="96" rx="4.5"/><circle class="bd-drop" cx="259" cy="302.9" r="7.4"/></g><g style="--a:0.36;--L:118px;--d:8.8s;--dl:-5.2s"><rect class="bd-run" x="312.0" y="300.9" width="12" height="118" rx="6.0"/><circle class="bd-drop" cx="318" cy="300.9" r="9.8"/></g><g style="--a:0.55;--L:58px;--d:6.6s;--dl:-1.8s"><rect class="bd-run" x="348.0" y="304.9" width="8" height="58" rx="4.0"/><circle class="bd-drop" cx="352" cy="304.9" r="6.6"/></g></g><path d="M36 100 Q118 78 198 106 L198 306 Q118 282 36 304 Z" fill="#FAF6EC"/><path d="M202 106 Q282 78 364 100 L364 304 Q282 282 202 306 Z" fill="#F5EDD8"/><path d="M192 105 Q197 106 200 108 L200 312 Q197 309 192 307 Z" fill="rgba(26,13,5,.06)"/><path d="M208 105 Q203 106 200 108 L200 312 Q203 309 208 307 Z" fill="rgba(26,13,5,.08)"/><path d="M200 106 V310" stroke="rgba(26,13,5,.22)" stroke-width="1.5"/><path class="bd-lines" fill="none" stroke="rgba(26,13,5,.18)" stroke-width="2" stroke-linecap="round" d="M56 134 Q118 117 182 138 M218 138 Q282 117 344 134 M56 152 Q118 135 182 156 M218 156 Q282 135 344 152 M56 170 Q118 153 182 174 M218 174 Q282 153 344 170 M56 188 Q118 171 140 187 M218 192 Q282 171 344 188 M56 206 Q118 189 182 210 M218 210 Q282 189 344 206 M56 224 Q118 207 182 228 M218 228 Q258 216 296 215 M56 242 Q118 225 182 246 M218 246 Q282 225 344 242 M56 260 Q118 243 182 264 M218 264 Q282 243 344 260 M56 278 Q118 261 140 277 M218 282 Q282 261 344 278"/></svg>';
+  function bookDrip() { return '<figure class="ar-photo melt" aria-hidden="true"><div class="melt-in">' + BOOK_DRIP + "</div></figure>"; }
   function pageJournal() {
-    return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: QUOTE + BOOK }) +
+    return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: QUOTE + BOOK })
+        .replace(/<\/section>$/, bookDrip() + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo has-melt">') +
       '<div class="page-body"><section class="block-sec blog-sec" aria-label="Posts"><ul class="post-grid">' + BLOG.map(function (p, k) { return postCard(p, k === 0); }).join("") + "</ul></section>" +
       closing() + "</div>";   // (the footer's newsletter form follows: the page's own was a second one, 10 Nov review)
   }
@@ -762,9 +767,20 @@
       if (e > i) { for (k = i; k <= e; k++) card[k] = kind; card[i] += " first"; card[e] += " last"; }
       i = e;
     }
+    // three or more plain paragraphs in a row (Vemir, 18 Nov: no wall of text anywhere) sit on a light panel with VF's AR dot grid
+    // drifting faintly behind them, its glow taking turns right and left (nothing ever draws across the words)
+    var runAt = {}, runEnd = {}, nRun = 0, KINDS = ["dots", "dots-l"];
+    function plainP(j) { var b0 = body[j]; return b0 && b0[0] === "p" && !say[j] && !card[j] && !qa[j] && j !== opener && !put[j] && !/^<(img|figure|div|table)/.test(b0[1]); }
+    for (i = 0; i < body.length; i++) {
+      if (!plainP(i)) continue;
+      var e2 = i; while (plainP(e2 + 1)) e2++;
+      if (e2 - i >= 2) { runAt[i] = KINDS[nRun % KINDS.length]; runEnd[e2] = 1; nRun++; }
+      i = e2;
+    }
     var out = [], inFaq = false;
     body.forEach(function (b, j) {
       if (qa[j] === "in") return;
+      if (runAt[j]) out.push('<div class="prun prun-' + runAt[j] + '">' + "");
       var html;
       if (qa[j]) {
         html = '<details class="qa"><summary>' + qa[j][0] + "</summary>" +
@@ -784,7 +800,7 @@
         if (/first/.test(c)) html = '<div class="pcards' + (c.indexOf("num") === 0 ? " num" : "") + '">' + html;
         if (/last/.test(c)) html += "</div>";
       }
-      out.push((put[j] || "") + html);
+      out.push((put[j] || "") + html + (runEnd[j] ? "</div>" : ""));
     });
     return out.join("");
   }
@@ -937,7 +953,8 @@
   function pageStart(pick) {
     var on = FORMS.some(function (f) { return f.id === pick; }) ? pick : "quote";
     var top = START_TOP[on === "careers" ? "careers" : "start"];
-    return hero({ title: top[0], lede: top[1], acts: top[2], cls: "page-hero-start" }) +
+    return hero({ title: top[0], lede: top[1], acts: top[2], cls: "page-hero-start" })
+        .replace(/<\/section>$/, '<canvas class="line-art start-art" data-shape="' + (on === "careers" ? "sphere" : "torus") + '" aria-hidden="true"></canvas></section>') +
       '<div class="page-body page-body-start"><section class="block-sec"><p class="choose-label" id="choose-label">Choose your option:</p><div class="vf-choose" role="group" aria-labelledby="choose-label">' + FORMS.map(function (f) {
         return '<button type="button" class="vf-tab" data-form="' + f.id + '" aria-pressed="' + (f.id === on) + '"><span class="vf-tab-title">' + esc(f.tab) + '</span><span class="vf-tab-text">' + esc(f.pick) + "</span></button>"; }).join("") + "</div>" +
       FORMS.map(function (f) { return formHtml(f, f.id === on); }).join("") + "</section>" +
@@ -988,7 +1005,7 @@
     });
     if (!input.multiple) have = have.slice(-1);
     FILES.set(form, have); if (have.length) input.removeAttribute("aria-invalid");
-    drawFiles(form);
+    drawFiles(form); drawHint(form);
     $(".vf-status", form).textContent = refused.length ? "Not added: " + refused.join("; ") + "." : "";
     $(".vf-send", form).href = formMail(form).href; sumUpdate(form);
   }
@@ -997,6 +1014,15 @@
     ul.innerHTML = filesOf(form).map(function (fl, k) {
       return '<li><span class="vf-file-name">' + esc(fl.name) + '</span><span class="vf-file-size">' + size(fl.size) + '</span><button type="button" class="vf-file-remove" data-k="' + k + '" aria-label="Remove ' + esc(fl.name) + '">Remove</button></li>';
     }).join("");
+  }
+  // honest about where the files go: a phone with a share sheet hands them over itself; anywhere else the email opens with the
+  // answers, and the visitor adds the files there (a web page can't attach them to an email)
+  function shareFiles() { try { return !!(navigator.canShare && navigator.canShare({ files: [new File(["x"], "x.pdf", { type: "application/pdf" })] })); } catch (e) { return false; } }
+  function drawHint(form) {
+    var box = $(".vf-attach", form); if (!box || form.id !== "form-quote") return;
+    var h = $(".vf-file-hint", box); if (!h) { h = document.createElement("p"); h.className = "vf-file-hint"; $(".vf-file-list", box).after(h); }
+    h.hidden = !filesOf(form).length || shareFiles();
+    h.textContent = "When you press Submit, your email opens with your answers: add these files to that email before you send it.";
   }
   document.addEventListener("change", function (e) {
     var input = e.target; if (!input.matches || !input.matches(".vf-attach input[type=file]")) return;
@@ -1088,7 +1114,7 @@
     }
     var rm = t.closest(".vf-file-remove");
     if (rm) {
-      var f3 = rm.closest("form"), k3 = +rm.getAttribute("data-k"), list = filesOf(f3).slice(); list.splice(k3, 1); FILES.set(f3, list); drawFiles(f3); $(".vf-send", f3).href = formMail(f3).href; sumUpdate(f3);
+      var f3 = rm.closest("form"), k3 = +rm.getAttribute("data-k"), list = filesOf(f3).slice(); list.splice(k3, 1); FILES.set(f3, list); drawFiles(f3); drawHint(f3); $(".vf-send", f3).href = formMail(f3).href; sumUpdate(f3);
       // the button just went with its file: focus moves to the next file's Remove, or back to the field once the list is empty
       var rest = f3.querySelectorAll(".vf-file-remove"), next = rest[Math.min(k3, rest.length - 1)] || $(".vf-attach input[type=file]", f3);
       if (next) next.focus();
@@ -1283,6 +1309,68 @@
   // finds it, brackets closing on it and one scan line passing. Never under reduced motion; without the observer, all just there
   var revealIo = null;
   var REDUCE = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // line drawings that turn slowly (after the wireframes in VF's decks, "the sweetest season"): a torus or a sphere in thin
+  // ink lines on the paper, drawn only while on screen; still under reduced motion
+  var ART = [], artIO = null, artRaf = 0;
+  function artShape(kind) {
+    var L = [], i, j, a, t, N = 64;
+    if (kind === "torus") {
+      var R = 1, r = .46;
+      for (i = 0; i < 22; i++) { a = i / 22 * Math.PI * 2; var c = []; for (j = 0; j <= N; j++) { t = j / N * Math.PI * 2; c.push([(R + r * Math.cos(t)) * Math.cos(a), (R + r * Math.cos(t)) * Math.sin(a), r * Math.sin(t)]); } L.push(c); }
+      [0, Math.PI / 2, Math.PI, -Math.PI / 2].forEach(function (t0) { var c = []; for (j = 0; j <= N * 2; j++) { a = j / (N * 2) * Math.PI * 2; c.push([(R + r * Math.cos(t0)) * Math.cos(a), (R + r * Math.cos(t0)) * Math.sin(a), r * Math.sin(t0)]); } L.push(c); });
+    } else {
+      for (i = 0; i < 9; i++) { a = i / 9 * Math.PI; var m = [], m2 = []; for (j = 0; j <= N; j++) { t = .12 + j / N * (Math.PI - .24); m.push([Math.sin(t) * Math.cos(a), Math.sin(t) * Math.sin(a), Math.cos(t)]); m2.push([-Math.sin(t) * Math.cos(a), -Math.sin(t) * Math.sin(a), Math.cos(t)]); } L.push(m2); L.push(m); }
+      for (i = 1; i < 8; i++) { var z = Math.cos(i / 8 * Math.PI), rr = Math.sin(i / 8 * Math.PI), p2 = []; for (j = 0; j <= N; j++) { t = j / N * Math.PI * 2; p2.push([rr * Math.cos(t), rr * Math.sin(t), z]); } L.push(p2); }
+    }
+    return L;
+  }
+  function artDraw(o, time) {
+    var cv = o.cv, r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+    if (!W || !H) return;
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    var x = cv.getContext("2d"); x.clearRect(0, 0, W, H);
+    var spin = time * .00011 + o.seed, tilt = o.kind === "torus" ? 1.08 : .42 + Math.sin(time * .00007) * .08;
+    var cz = Math.cos(spin), sz = Math.sin(spin), cx = Math.cos(tilt), sx = Math.sin(tilt);
+    var S = Math.min(W, H) * (o.kind === "torus" ? .34 : .4), X0 = W / 2, Y0 = H / 2;
+    x.lineWidth = dpr; x.strokeStyle = "rgba(26, 13, 5, .16)";
+    o.lines.forEach(function (l) {
+      x.beginPath();
+      l.forEach(function (q, k) {
+        var x1 = q[0] * cz - q[1] * sz, y1 = q[0] * sz + q[1] * cz, z1 = q[2];
+        var y2 = y1 * cx - z1 * sx, z2 = y1 * sx + z1 * cx, f = 3.2 / (3.2 + z2);
+        var px = X0 + x1 * S * f, py = Y0 + y2 * S * f;
+        if (k) x.lineTo(px, py); else x.moveTo(px, py);
+      });
+      x.stroke();
+    });
+  }
+  function artLoop(time) {
+    artRaf = 0; var any = false;
+    ART.forEach(function (o) { if (o.on && document.contains(o.cv)) { artDraw(o, time); any = true; } });
+    ART = ART.filter(function (o) { return document.contains(o.cv); });
+    if (any && !REDUCE) artRaf = requestAnimationFrame(artLoop);
+  }
+  function wireArt(root) {
+    [].forEach.call(root.querySelectorAll(".book-drip"), function (sv) {
+      if (!("IntersectionObserver" in window)) return;
+      new IntersectionObserver(function (es) { es.forEach(function (e) { sv.classList.toggle("bd-off", !e.isIntersecting); }); }).observe(sv);
+    });
+    var cvs = root.querySelectorAll("canvas.line-art:not([data-on])");
+    if (!cvs.length) return;
+    if (!artIO && "IntersectionObserver" in window) artIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { ART.forEach(function (o) { if (o.cv === e.target) o.on = e.isIntersecting; }); });
+      if (!artRaf) artRaf = requestAnimationFrame(artLoop);
+    }, { rootMargin: "120px 0px" });
+    [].forEach.call(cvs, function (cv, k) {
+      cv.setAttribute("data-on", "");
+      var o = { cv: cv, kind: cv.getAttribute("data-shape") === "torus" ? "torus" : "sphere", seed: k * 1.7, on: !artIO };
+      o.lines = artShape(o.kind); ART.push(o);
+      if (artIO) artIO.observe(cv);
+      if (REDUCE) requestAnimationFrame(function () { artDraw(o, 0); });
+    });
+    if (!artRaf) artRaf = requestAnimationFrame(artLoop);
+  }
   function wireReveal(root) {
     if (revealIo) { revealIo.disconnect(); revealIo = null; }
     if (REDUCE || !("IntersectionObserver" in window)) return;
@@ -1446,7 +1534,7 @@
     if (h === "industries") return { title: "Industries", html: pageIndustries, stage: [0, 0.3] };   // the box beginning to open
     if (h === "shows") return { title: "Events", html: pageShows, stage: [5, 0] };   // the booth floor; named as the menu names it
     if (h === "studio") return { title: "About us", html: pageStudio, stage: null };   // the team, not the block (Josh, 28 Oct)
-    if (h === "blog" || h === "journal") return { title: "Blog", html: pageJournal, stage: [0, 0.09] };   // the lid just open, a line of light
+    if (h === "blog" || h === "journal") return { title: "Blog", html: pageJournal, stage: null };   // a book melting into the posts, not the block (Vemir, 18 Nov)
     if (h.indexOf("blog-") === 0) { var post = postBy(h.slice(5)); return post ? { title: post.title, html: function () { return pagePost(post); }, stage: null } : null; }   // a post reads on plain paper
     if (h === "contact") return { title: "Contact", html: pageContact, stage: [8, 0] };
     // the forms on plain paper with a short top, so "Get a quote" lands on the form (Josh, 11 Nov; was the block, a full screen)
@@ -1518,7 +1606,7 @@
       pages.hidden = false; root.classList.add("on-page"); root.classList.toggle("page-plain", !r.stage);
       if (skip) skip.textContent = "Skip to the content";
       wireGalleries(pages);
-      wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages);
+      wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages); wireArt(pages);
       document.title = h === landRoute && location.pathname === landPath ? landTitle : pageTitle(h, r);
       if (window.VFStage) window.VFStage.page(r.stage || false);
       window.scrollTo({ top: 0, behavior: "instant" });
@@ -1528,7 +1616,7 @@
     }
     if (current !== null || first) {
       unwireClips(pages);
-      pages.hidden = true; pages.innerHTML = ""; wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages); root.classList.remove("on-page", "page-plain");
+      pages.hidden = true; pages.innerHTML = ""; wireFinder(pages); wireCards(pages); wireReveal(pages); wirePeek(pages); wireRead(pages); wireArt(pages); root.classList.remove("on-page", "page-plain");
       if (skip) skip.textContent = skipHome;
       document.title = baseTitle;
       if (window.VFStage) window.VFStage.page(null);
