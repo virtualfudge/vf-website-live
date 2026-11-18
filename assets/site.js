@@ -349,11 +349,11 @@
   // a project: VF's own page, section by section
   function pageCase(c) {
     var p = V.projects[c.slug], body = "";
-    if (CASE_FILM[c.slug]) body += film(CASE_FILM[c.slug], "See it in action", "");
+    if (CASE_FILM[c.slug] && CASE_FILM[c.slug].length > 1) body += film(CASE_FILM[c.slug], "See it in action", "");   // one clip: it is already the hero (Vemir, 18 Nov)
     // Josh, 11 Nov: no page should read as a wall. Same words, as on About us and the industries (17 Nov evening): the
     // challenge, the solution and the result as cards under a brass AR corner on a cream band, the features as cards,
     // the results on a band, long paragraphs cut at their own sentence ends
-    body += sec("<h2>" + esc(p.about.title) + "</h2>" + parasShort(p.about.text, true) + tiles(p.about.items, "answer"), "band");
+    body += sec(headSplit(esc(p.about.title), parasShort(p.about.text, true)) + tiles(p.about.items, "answer"), "band");
     if (p.features && p.features.items.length) body += sec("<h2>" + esc(p.features.title) + '</h2><div class="three tiles feats">' + p.features.items.map(function (f) {
       var i = f.indexOf(": "); return i > 0 ? "<div><h3>" + esc(f.slice(0, i)) + "</h3>" + parasShort([f.slice(i + 2)]) + "</div>" : "<div>" + parasShort([f]) + "</div>"; }).join("") + "</div>");
     if (p.banner && p.banner.title) body += sec("<h2>" + esc(p.banner.title) + "</h2>" + paras(p.banner.text, true) + '<div class="acts">' + pair(p.banner.btn) + "</div>", "tagline");
@@ -431,6 +431,9 @@
   }
   // an industry: VF's page for it, in purposeful blocks (Josh, 23 Oct; Vemir, 27 Oct: "make those sections better"): why AR,
   // the challenges beside the answer, the proof, how it launches, one call to action, examples and questions
+  // a section's heading on the left and its words beside it, so no paragraph sits alone under a heading with the right half
+  // empty (Vemir, 18 Nov: "too much text dump")
+  function headSplit(title, html) { return '<div class="split answer-head"><h2>' + title + "</h2><div>" + html + "</div></div>"; }
   function pageIndustry(id) {
     var d = IND[id] || {}, v = V.industries[id], body = "";
     if (!v) return hero({ title: esc(nicheName(id)) }) + '<div class="page-body">' + closing() + "</div>";
@@ -454,16 +457,16 @@
       body += sec("<h2>" + esc(MED.researchTitle) + '</h2><p class="lead">' + esc(MED.research) + '</p><ul class="cites">' +
         MED.cites.map(function (c) { return "<li>" + esc(c[0]) + ' <a href="' + c[1] + '" target="_blank" rel="noopener">' + c[2] + NEWTAB + "</a></li>"; }).join("") + "</ul>");
     }
-    if (v.results.items.length) body += sec("<h2>" + esc(v.results.title) + "</h2>" + parasShort(v.results.text, true) + '<ul class="figures">' + v.results.items.map(function (r) {
+    if (v.results.items.length) body += sec(headSplit(esc(v.results.title), parasShort(v.results.text, true)) + '<ul class="figures">' + v.results.items.map(function (r) {
       return '<li>' + (r[0] ? '<span class="fig">' + esc(r[0]) + "</span>" : "") + '<span class="fig-what">' + esc(r[1]) + '</span><span class="fig-src">Source: ' +
         (r[3] ? '<a href="' + esc(r[3]) + '" target="_blank" rel="noopener">' + esc(r[2]) + NEWTAB + "</a>" : esc(r[2])) + "</span></li>"; }).join("") + "</ul>", "band");
     var f = v.featured;
-    if (f.title) body += sec("<h2>" + esc(f.title) + "</h2>" + points(f.text) +
+    if (f.title) body += sec('<div class="split feat-split"><div><h2>' + esc(f.title) + "</h2>" + points(f.text) + '</div><div class="feat-side">' +
       (f.blockTitle ? "<h3 class=\"feat-ask\">" + esc(f.blockTitle) + "</h3>" : "") +
-      f.slides.map(function (s) { return '<div class="example"><h3>' + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p>" + (s[2] ? '<p><a class="link" href="' + esc(s[2]) + '">' + esc(s[3] || "Learn more") + "</a></p>" : "") + "</div>"; }).join(""));
+      f.slides.map(function (s) { return '<div class="example"><h3>' + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p>" + (s[2] ? '<p><a class="link" href="' + esc(s[2]) + '">' + esc(s[3] || "Learn more") + "</a></p>" : "") + "</div>"; }).join("") + "</div></div>");
     if (IND_FILM[id] && IND_FILM[id].length < 3) body += film(IND_FILM[id][0], IND_FILM[id][1], "") + (id === "events" ? '<p class="after-film"><a class="link" href="#shows">See the shows we exhibited at</a></p>' : "");
     if (!late) body += plate(PLATE[id]);
-    if (v.steps) body += sec("<h2>" + esc(v.steps.title) + "</h2>" + paras(v.steps.text, true) + '<ol class="steps three-steps">' + v.steps.items.map(function (s, k) {
+    if (v.steps) body += sec(headSplit(esc(v.steps.title), paras(v.steps.text, true)) + '<ol class="steps three-steps">' + v.steps.items.map(function (s, k) {
       return '<li><span class="step-no">Step ' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>", "band");
     body += sec("<h2>" + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + pair(v.banner.btn) + "</div>", "tagline");   // the page's one call to action, after how it launches
     body += cards(d.cases || [], "Example projects", "");
@@ -578,7 +581,7 @@
   var TV = '<div class="press"><figure class="press-clip"><video class="press-video" controls playsinline preload="none" poster="' + MEDIA + 'tv-wbs.jpg" data-src="' + MEDIA + 'tv-wbs.mp4" ' +
     'aria-label="TV Tokyo’s World Business Satellite at the Virtual Fudge booth, NRF 2026"></video></figure>' +
     '<div class="press-text"><h3>On TV Tokyo’s World Business Satellite</h3><p>Reporting on AI shopping from NRF 2026, WBS stopped by our booth: the Noyah Cosmetics virtual store on a tablet, and an interview with Josh.</p>' +
-    '<p class="press-quote">“Product information in its own virtual space, showing customers a product’s world and what sets it apart.”</p><p class="press-src">WBS’s on-screen caption, translated from the Japanese. 53 seconds, with sound.</p></div></div>';
+    '<p class="press-quote">“Product information in its own virtual space, showing customers a product’s world and what sets it apart.”</p><p class="press-src">From WBS’s on-screen caption, translated from Japanese.</p></div></div>';
   function pageShows() {
     return hero({ title: "On the show floor", lede: "In 2026 we packed up our own booth for three of the biggest shows in the business and let people try every build for themselves.", acts: QUOTE + BOOK + REEL_BTN }) +
       '<div class="page-body">' + SHOWS.map(function (s) {
@@ -590,7 +593,7 @@
           (s.quote ? '<blockquote class="quote"><p>“' + esc(FOUNDER[0]) + '”</p><footer>' + esc(FOUNDER[1]) + "</footer></blockquote>" : "") +
           (s.post ? '<p class="after-film"><a class="link" href="' + s.post[1] + '">' + esc(s.post[0]) + "</a></p>" : "") + "</section>";
       }).join("") +
-      sec("<h2>Bring it to your booth</h2><p class=\"lead\">One thing people stop for in the three seconds they give you, a scan that doubles as the sign-up, and an experience that goes home on their phone. Let’s build yours.</p>" +
+      sec("<h2>Bring it to your booth</h2><p class=\"lead\">Give people a reason to stop at your booth, let one scan sign them up, and send them home with the experience on their phone. Let’s build yours.</p>" +
         '<div class="acts">' + QUOTE + BOOK + '<a class="link" href="#for-events">AR in marketing</a></div>') + "</div>";
   }
   function tagLine(tags) { return tags.map(function (t, k) { return k && !/^[A-Z]{2}/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t; }).join(", "); }
@@ -619,13 +622,12 @@
       (p.hero ? '<span class="post-pic"><img src="' + p.hero[0] + cardSrcset(p, lead) + '" width="' + p.hero[1] + '" height="' + p.hero[2] + '" alt="" loading="' + (lead ? "eager" : "lazy") + '" decoding="async"></span>' : "") +
       '<span class="post-text"><span class="post-meta">' + postMeta(p) + '</span><span class="post-title">' + esc(p.title) + '</span><span class="post-line">' + esc(p.desc) + "</span></span></a></li>";
   }
-  // the blog's picture (Vemir, 18 Nov: something to read, dripping, in the brand; not the logo): an open book in VF's
-  // chocolate, its fudge running off the bottom edge in slow drips that stay joined to it, inside the logo's four corners
-  var BOOK_DRIP = '<svg class="book-drip" viewBox="0 0 400 480" aria-hidden="true" focusable="false"><defs><linearGradient id="bdG" gradientUnits="userSpaceOnUse" x1="24" y1="0" x2="376" y2="0"><stop offset="0" stop-color="#240d02"/><stop offset=".35" stop-color="#7a4422"/><stop offset=".5" stop-color="#8d532b"/><stop offset=".65" stop-color="#7a4422"/><stop offset="1" stop-color="#240d02"/></linearGradient><filter id="bdGoo" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10" result="g"/><feComposite in="SourceGraphic" in2="g" operator="atop"/></filter></defs><g class="bd-corners" fill="none" stroke="#1A0D05" stroke-width="4"><path d="M6 46V6h40"/><path d="M354 6h40v40"/><path d="M6 434v40h40"/><path d="M354 474h40v-40"/></g><g class="bd-fudge" filter="url(#bdGoo)" fill="url(#bdG)"><path d="M24 112 Q112 88 200 116 Q288 88 376 112 L376 318 Q288 296 200 324 Q112 296 24 318 Z"/><g style="--a:0.5;--L:64px;--d:7.6s;--dl:0s"><rect class="bd-run" x="44.5" y="304.6" width="11" height="64" rx="5.5"/><circle class="bd-drop" cx="50" cy="304.6" r="9.0"/></g><g style="--a:0.32;--L:132px;--d:9.2s;--dl:-2.4s"><rect class="bd-run" x="90.5" y="300.4" width="13" height="132" rx="6.5"/><circle class="bd-drop" cx="97" cy="300.4" r="10.7"/></g><g style="--a:0.45;--L:82px;--d:7.0s;--dl:-4.1s"><rect class="bd-run" x="137.0" y="302.9" width="8" height="82" rx="4.0"/><circle class="bd-drop" cx="141" cy="302.9" r="6.6"/></g><g style="--a:0.3;--L:150px;--d:10.4s;--dl:-1.2s"><rect class="bd-run" x="206.0" y="312.1" width="14" height="150" rx="7.0"/><circle class="bd-drop" cx="213" cy="312.1" r="11.5"/></g><g style="--a:0.42;--L:96px;--d:8.0s;--dl:-3.4s"><rect class="bd-run" x="254.5" y="302.9" width="9" height="96" rx="4.5"/><circle class="bd-drop" cx="259" cy="302.9" r="7.4"/></g><g style="--a:0.36;--L:118px;--d:8.8s;--dl:-5.2s"><rect class="bd-run" x="312.0" y="300.9" width="12" height="118" rx="6.0"/><circle class="bd-drop" cx="318" cy="300.9" r="9.8"/></g><g style="--a:0.55;--L:58px;--d:6.6s;--dl:-1.8s"><rect class="bd-run" x="348.0" y="304.9" width="8" height="58" rx="4.0"/><circle class="bd-drop" cx="352" cy="304.9" r="6.6"/></g></g><path d="M36 100 Q118 78 198 106 L198 306 Q118 282 36 304 Z" fill="#FAF6EC"/><path d="M202 106 Q282 78 364 100 L364 304 Q282 282 202 306 Z" fill="#F5EDD8"/><path d="M192 105 Q197 106 200 108 L200 312 Q197 309 192 307 Z" fill="rgba(26,13,5,.06)"/><path d="M208 105 Q203 106 200 108 L200 312 Q203 309 208 307 Z" fill="rgba(26,13,5,.08)"/><path d="M200 106 V310" stroke="rgba(26,13,5,.22)" stroke-width="1.5"/><path class="bd-lines" fill="none" stroke="rgba(26,13,5,.18)" stroke-width="2" stroke-linecap="round" d="M56 134 Q118 117 182 138 M218 138 Q282 117 344 134 M56 152 Q118 135 182 156 M218 156 Q282 135 344 152 M56 170 Q118 153 182 174 M218 174 Q282 153 344 170 M56 188 Q118 171 140 187 M218 192 Q282 171 344 188 M56 206 Q118 189 182 210 M218 210 Q282 189 344 206 M56 224 Q118 207 182 228 M218 228 Q258 216 296 215 M56 242 Q118 225 182 246 M218 246 Q282 225 344 242 M56 260 Q118 243 182 264 M218 264 Q282 243 344 260 M56 278 Q118 261 140 277 M218 282 Q282 261 344 278"/></svg>';
-  function bookDrip() { return '<figure class="ar-photo melt" aria-hidden="true"><div class="melt-in">' + BOOK_DRIP + "</div></figure>"; }
+  // the blog's picture (Vemir, 18 Nov: the flat book looked cheap): an open book in fine wireframe ink, a page turning and
+  // fudge dripping off the cover, drawn like the torus beside the quote form
   function pageJournal() {
     return hero({ title: esc(HOME.blog.title), lede: "Fresh out of the fudge kitchen: notes on AR, packaging, retail and everything in between.", acts: QUOTE + BOOK })
-        .replace(/<\/section>$/, bookDrip() + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo has-melt">') +
+      .replace(/<\/section>$/, '<figure class="ar-photo book-fig" aria-hidden="true"><canvas class="line-art book-art" data-shape="book"></canvas></figure></section>')
+      .replace('<section class="page-hero">', '<section class="page-hero has-photo">') +
       '<div class="page-body"><section class="block-sec blog-sec" aria-label="Posts"><ul class="post-grid">' + BLOG.map(function (p, k) { return postCard(p, k === 0); }).join("") + "</ul></section>" +
       closing() + "</div>";   // (the footer's newsletter form follows: the page's own was a second one, 10 Nov review)
   }
@@ -819,11 +821,14 @@
   // an address may break after its @ when a column is narrower than it ("partnerships@ / virtualfudge.com"), never mid-word
   function addr(a) { return esc(a).replace("@", "@<wbr>"); }
   function pageContact() {
-    return hero({ title: "Say hi", lede: "Tell us briefly what you want, and we’ll let you know if we can help. Fastest way in? Book a call.", acts: BOOK + QUOTE }) +
-      '<div class="page-body"><section class="block-sec"><h2 class="sr">How to reach us</h2><div class="three contact">' +
+    // the ways to reach us beside the words, where the block stood (Vemir, 18 Nov: "contact page should make more sense")
+    var card = '<aside class="contact-card" aria-label="How to reach us">' +
       '<div><h3>Write</h3><p><a class="link" href="mailto:' + STUDIO.email + '">' + addr(STUDIO.email) + "</a></p></div>" +
       '<div><h3>Call</h3><p><a class="link" href="tel:' + STUDIO.tel + '">' + STUDIO.phone + "</a></p></div>" +
-      "<div><h3>Visit</h3><address>" + STUDIO.address.join("<br>") + "</address></div></div></section>" +
+      "<div><h3>Visit</h3><address>" + STUDIO.address.join("<br>") + "</address></div></aside>";
+    return hero({ title: "Say hi", lede: "Tell us briefly what you want, and we’ll let you know if we can help. Fastest way in? Book a call.", acts: BOOK + QUOTE })
+        .replace(/<\/section>$/, card + "</section>").replace('<section class="page-hero">', '<section class="page-hero has-photo has-card">') +
+      '<div class="page-body">' +
       sec("<h2>Who you’ll talk to</h2>" + teamList()) +
       // careers, press and partners side by side, each address the same size as the studio's own
       sec('<h2 class="sr">More ways in</h2><div class="three contact"><div><h3>Careers</h3><p><a class="link" href="mailto:' + STUDIO.careers + '">' + addr(STUDIO.careers) + '</a></p></div>' +
@@ -1324,17 +1329,44 @@
     }
     return L;
   }
+  function bookLines(time) {
+    var L = [], N = 24, H = .78, W = 1.05, i, j;
+    function page(prof, rows, cols) {   // prof(u) -> [x, z]; rows: ruled lines across the page; cols: lines along the spine
+      var P = []; for (j = 0; j <= N; j++) P.push(prof(j / N));
+      [-H, H].concat(rows).forEach(function (v) { L.push(P.map(function (q) { return [q[0], v, q[1]]; })); });
+      cols.forEach(function (u) { var q = prof(u); L.push([[q[0], -H, q[1]], [q[0], H, q[1]]]); });
+    }
+    function bend(angle, lift) {   // walk out from the spine in 12 steps, each at angle(step)
+      return function (u) { var x = 0, z = 0, s, n = Math.round(u * 12); for (s = 1; s <= n; s++) { var a = angle(s / 12); x += Math.cos(a) * W / 12; z += Math.sin(a) * W / 12; } return [x, z + lift]; };
+    }
+    var ruled = []; for (i = 0; i < 9; i++) ruled.push(-.58 + i * .145);
+    for (i = 0; i < 3; i++) [0, 1].forEach(function (left) {
+      var lift = .42 - i * .08, f = bend(function (u) { var a = lift * Math.pow(1 - u, 2.2); return left ? Math.PI - a : a; }, -i * .018);
+      page(f, i ? [] : ruled, [1]);
+    });
+    var t = (time * .000045) % 1, e = t < .7 ? (1 - Math.cos(t / .7 * Math.PI)) / 2 : 1, th = .12 + e * (Math.PI - .24);
+    if (t < .7) page(bend(function (u) { return th + Math.sin(u * Math.PI) * .32 * Math.sin(e * Math.PI); }, .03), ruled.filter(function (v, k) { return k % 2 === 0; }), []);
+    [1, -1].forEach(function (sd) { L.push([[0, -H - .06, -.1], [sd * (W + .06), -H - .06, -.1], [sd * (W + .06), H + .06, -.1], [0, H + .06, -.1]]); });
+    L.push([[0, -H - .06, -.1], [0, H + .06, -.1]]);
+    [[-.78, .55, 0], [-.41, .9, 2.1], [-.08, .4, 4.3], [.3, 1, 1.2], [.66, .62, 3.3], [.9, .35, 5.1]].forEach(function (d) {
+      var len = .12 + d[1] * .55 * (.62 + .38 * Math.sin(time * .00055 + d[2])), y = H + .06, r = .028 + d[1] * .018, c = [];
+      L.push([[d[0] - r * .7, y, -.1], [d[0] - r * .7, y, -.1 - len], [d[0] + r * .7, y, -.1 - len], [d[0] + r * .7, y, -.1]]);
+      for (j = 0; j <= 16; j++) { var q = j / 16 * Math.PI * 2; c.push([d[0] + Math.cos(q) * r, y, -.1 - len - r + Math.sin(q) * r]); }
+      L.push(c);
+    });
+    return L;
+  }
   function artDraw(o, time) {
     var cv = o.cv, r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
     var W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
     if (!W || !H) return;
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
     var x = cv.getContext("2d"); x.clearRect(0, 0, W, H);
-    var spin = time * .00011 + o.seed, tilt = o.kind === "torus" ? 1.08 : .42 + Math.sin(time * .00007) * .08;
+    var book = o.kind === "book", spin = book ? Math.sin(time * .00009) * .14 : time * .00011 + o.seed, tilt = book ? .9 : o.kind === "torus" ? 1.08 : .42 + Math.sin(time * .00007) * .08;
     var cz = Math.cos(spin), sz = Math.sin(spin), cx = Math.cos(tilt), sx = Math.sin(tilt);
-    var S = Math.min(W, H) * (o.kind === "torus" ? .34 : .4), X0 = W / 2, Y0 = H / 2;
-    x.lineWidth = dpr; x.strokeStyle = "rgba(26, 13, 5, .16)";
-    o.lines.forEach(function (l) {
+    var S = Math.min(W, H) * (book ? .31 : o.kind === "torus" ? .34 : .4), X0 = W / 2, Y0 = H * (book ? .5 : .5);
+    x.lineWidth = dpr; x.strokeStyle = book ? "rgba(74, 36, 20, .45)" : "rgba(26, 13, 5, .16)"; x.lineJoin = "round";
+    (book ? bookLines(time) : o.lines).forEach(function (l) {
       x.beginPath();
       l.forEach(function (q, k) {
         var x1 = q[0] * cz - q[1] * sz, y1 = q[0] * sz + q[1] * cz, z1 = q[2];
@@ -1352,10 +1384,6 @@
     if (any && !REDUCE) artRaf = requestAnimationFrame(artLoop);
   }
   function wireArt(root) {
-    [].forEach.call(root.querySelectorAll(".book-drip"), function (sv) {
-      if (!("IntersectionObserver" in window)) return;
-      new IntersectionObserver(function (es) { es.forEach(function (e) { sv.classList.toggle("bd-off", !e.isIntersecting); }); }).observe(sv);
-    });
     var cvs = root.querySelectorAll("canvas.line-art:not([data-on])");
     if (!cvs.length) return;
     if (!artIO && "IntersectionObserver" in window) artIO = new IntersectionObserver(function (es) {
@@ -1364,10 +1392,10 @@
     }, { rootMargin: "120px 0px" });
     [].forEach.call(cvs, function (cv, k) {
       cv.setAttribute("data-on", "");
-      var o = { cv: cv, kind: cv.getAttribute("data-shape") === "torus" ? "torus" : "sphere", seed: k * 1.7, on: !artIO };
-      o.lines = artShape(o.kind); ART.push(o);
+      var sh = cv.getAttribute("data-shape"), o = { cv: cv, kind: sh === "torus" || sh === "book" ? sh : "sphere", seed: k * 1.7, on: !artIO };
+      o.lines = o.kind === "book" ? [] : artShape(o.kind); ART.push(o);
       if (artIO) artIO.observe(cv);
-      if (REDUCE) requestAnimationFrame(function () { artDraw(o, 0); });
+      if (REDUCE) requestAnimationFrame(function () { artDraw(o, o.kind === "book" ? 9000 : 0); });
     });
     if (!artRaf) artRaf = requestAnimationFrame(artLoop);
   }
@@ -1534,9 +1562,9 @@
     if (h === "industries") return { title: "Industries", html: pageIndustries, stage: [0, 0.3] };   // the box beginning to open
     if (h === "shows") return { title: "Events", html: pageShows, stage: [5, 0] };   // the booth floor; named as the menu names it
     if (h === "studio") return { title: "About us", html: pageStudio, stage: null };   // the team, not the block (Josh, 28 Oct)
-    if (h === "blog" || h === "journal") return { title: "Blog", html: pageJournal, stage: null };   // a book melting into the posts, not the block (Vemir, 18 Nov)
+    if (h === "blog" || h === "journal") return { title: "Blog", html: pageJournal, stage: null };   // the wireframe book, not the block (Vemir, 18 Nov)
     if (h.indexOf("blog-") === 0) { var post = postBy(h.slice(5)); return post ? { title: post.title, html: function () { return pagePost(post); }, stage: null } : null; }   // a post reads on plain paper
-    if (h === "contact") return { title: "Contact", html: pageContact, stage: [8, 0] };
+    if (h === "contact") return { title: "Contact", html: pageContact, stage: null };
     // the forms on plain paper with a short top, so "Get a quote" lands on the form (Josh, 11 Nov; was the block, a full screen)
     if (h === "start") return { title: "Get a quote", html: function () { return pageStart("quote"); }, stage: null };
     if (h === "careers") return { title: "Careers", html: function () { return pageStart("careers"); }, stage: null };
