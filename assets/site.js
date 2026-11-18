@@ -433,7 +433,13 @@
   // the challenges beside the answer, the proof, how it launches, one call to action, examples and questions
   // a section's heading on the left and its words beside it, so no paragraph sits alone under a heading with the right half
   // empty (Vemir, 18 Nov: "too much text dump")
-  function headSplit(title, html) { return '<div class="split answer-head"><h2>' + title + "</h2><div>" + html + "</div></div>"; }
+  // with two or more paragraphs, the first goes under the heading and the rest beside it, so neither column stands empty
+  // (Vemir, 18 Nov: the heading alone over a blank half looked off)
+  function headSplit(title, html) {
+    var cut = html.indexOf("</p>") + 4, rest = cut > 3 ? html.slice(cut) : "";
+    if (/<p[\s>]/.test(rest)) return '<div class="split answer-head lead-split"><div><h2>' + title + "</h2>" + html.slice(0, cut) + "</div><div>" + rest + "</div></div>";
+    return '<div class="split answer-head"><h2>' + title + "</h2><div>" + html + "</div></div>";
+  }
   function pageIndustry(id) {
     var d = IND[id] || {}, v = V.industries[id], body = "";
     if (!v) return hero({ title: esc(nicheName(id)) }) + '<div class="page-body">' + closing() + "</div>";
@@ -450,7 +456,7 @@
       "<p>AR and VR in healthcare is forecast to grow from $4.7 billion in 2025 to $30 billion by 2034, about 22.9% a year.</p>" +
       '<p class="fig-src">Source: <a href="https://www.gminsights.com/industry-analysis/augmented-and-virtual-reality-in-healthcare-market" target="_blank" rel="noopener">Global Market Insights' + NEWTAB + "</a></p></div></div>");
     body += sec("<h2>" + esc(v.challenges.title) + "</h2>" + parasShort(v.challenges.text, true) + tiles(v.challenges.items, "problem row"), "band ask-sec");
-    body += sec('<div class="split answer-head"><h2>' + esc(v.solution.title) + "</h2><div>" + parasShort(v.solution.text, true) + "</div></div>" + tiles(v.solution.items, "answer"), "answer-sec");
+    body += sec(headSplit(esc(v.solution.title), parasShort(v.solution.text, true)) + tiles(v.solution.items, "answer"), "answer-sec");
     if (IND_FILM[id] && IND_FILM[id].length > 2) body += film(IND_FILM[id][0], IND_FILM[id][1], IND_FILM[id][2]);
     var late = !(IND_FILM[id] && IND_FILM[id].length > 2);   // the film comes after the examples: the photos go before the results
     if (late) body += plate(PLATE[id]);
@@ -958,7 +964,7 @@
   // the top of Start and of Careers (one page, two addresses): its title, line and button follow the choice below
   // the two ways in, side by side (Josh, 11 Nov): "Get a quote" glides to the quote form (and picks it, if another card
   // was chosen), "Book a call" opens the calendar; the cards and the form start in the first screen, under this short top
-  var START_TOP = { start: ["Let’s talk AR!", "What would you like to do today?", '<button type="button" class="book" data-see-options>Get a quote</button>' + BOOK],
+  var START_TOP = { start: ["Let’s talk AR!", "What would you like to do today?", BOOK],   // the options are right below; a second "Get a quote" here confused (Vemir, 18 Nov)
     careers: ["Careers", "Send us your resume, or choose another option below.", '<a class="link" href="#studio">Meet the team</a>'] };
   function pageStart(pick) {
     var on = FORMS.some(function (f) { return f.id === pick; }) ? pick : "quote";

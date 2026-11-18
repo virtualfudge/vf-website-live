@@ -1269,3 +1269,6 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .boom p { max-width: 60ch; }
 @media (max-width: 600px) { .boom { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 860px) { .contact-card { align-self: stretch; margin: 0 var(--gutter) 48px; } }
+
+.ind-body .answer-head > div > h2 { margin: 0 0 22px; }   /* a heading with its first paragraph under it */
+.ind-body .answer-head.lead-split { align-items: end; }   /* the rest of the words end level with the first paragraph */
