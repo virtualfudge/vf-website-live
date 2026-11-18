@@ -9,7 +9,7 @@
 <link rel="icon" href="/assets/favicon-32.png" sizes="32x32"><link rel="icon" href="/assets/favicon-192.png" sizes="192x192"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://use.typekit.net" crossorigin>
 <link rel="stylesheet" href="https://use.typekit.net/bwi4dnk.css">
-<link rel="stylesheet" href="story.css?v=decd0c5aa9">
+<link rel="stylesheet" href="story.css?v=4c9a89b624">
 </head>
 <body class="custom-scroll">
 <div class="loader">
@@ -1595,5 +1595,16 @@
 </main>
 <script>window.Fancybox = { bind: function () {} };   // the old page bound its video pop-ups first; there are none here</script>
 <script src="story.js?v=7e5978a610"></script>
+<script>(function () {   // a bubble that would open below the screen's foot opens above its label (Vemir, 18 Nov)
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest(".development-list--mountain .chocolate-button"), t = b && b.nextElementSibling;
+    if (!t || !t.classList.contains("tooltip")) return;
+    t.classList.remove("tip-up");
+    [30, 120, 300, 700].forEach(function (ms) { setTimeout(function () {
+      if (t.classList.contains("tip-up") || getComputedStyle(t).display === "none") return;
+      if (t.getBoundingClientRect().bottom > window.innerHeight - 12) t.classList.add("tip-up");
+    }, ms); });
+  }, true);
+})();</script>
 </body>
 </html>

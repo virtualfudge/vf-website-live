@@ -43,3 +43,7 @@ html{line-height:1.15;-webkit-text-size-adjust:100%}main{display:block}h1{font-s
 .story-calm__go { min-width: 0; padding: 16px 30px; border: 0; font-family: aileron, sans-serif; cursor: pointer; }
 .story-calm__back { font: 600 16px/1 aileron, sans-serif; color: #854e3a; text-underline-offset: 4px; }
 .story-calm__go:focus-visible, .story-calm__back:focus-visible { outline: 2px solid #edb953; outline-offset: 3px; }
+
+/* a bubble that would open below the screen's foot opens above its label instead (Vemir, 18 Nov: "bottom text cut off") */
+.development-list--mountain .development-list__tooltip.tip-up { top: auto !important; bottom: calc(100% + 26px); }
+.development-list--mountain .development-list__tooltip.tip-up:after { border-color: #cc9a79 transparent transparent; border-width: 20px 12px 0; top: auto; bottom: -20px; }
