@@ -444,6 +444,11 @@
     var whyP = parasShort(v.why.text, true), whyCut = whyP.indexOf("</p>") + 4;
     body += sec('<div class="split why-head"><div><h2>' + esc(v.why.title) + "</h2>" + whyP.slice(0, whyCut) + '</div><div class="why-more">' + whyP.slice(whyCut) +
       '<p class="other">' + esc(v.why.other) + ' <a class="link" href="#industries">' + esc((v.why.btn || ["See all industries"])[0]) + "</a></p></div></div>");
+    // healthcare: how fast the market is growing, up top (Vemir, 18 Nov: "a booming and opportune industry for AR"),
+    // from Global Market Insights' report page, read 18 Nov 2026
+    if (d.medical) body += sec('<div class="boom"><p class="boom-fig">$30B</p><div><p class="boom-head">A booming market for AR</p>' +
+      "<p>AR and VR in healthcare is forecast to grow from $4.7 billion in 2025 to $30 billion by 2034, about 22.9% a year.</p>" +
+      '<p class="fig-src">Source: <a href="https://www.gminsights.com/industry-analysis/augmented-and-virtual-reality-in-healthcare-market" target="_blank" rel="noopener">Global Market Insights' + NEWTAB + "</a></p></div></div>");
     body += sec("<h2>" + esc(v.challenges.title) + "</h2>" + parasShort(v.challenges.text, true) + tiles(v.challenges.items, "problem row"), "band ask-sec");
     body += sec('<div class="split answer-head"><h2>' + esc(v.solution.title) + "</h2><div>" + parasShort(v.solution.text, true) + "</div></div>" + tiles(v.solution.items, "answer"), "answer-sec");
     if (IND_FILM[id] && IND_FILM[id].length > 2) body += film(IND_FILM[id][0], IND_FILM[id][1], IND_FILM[id][2]);

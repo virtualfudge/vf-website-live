@@ -1256,6 +1256,16 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .contact-card p, .contact-card address { margin: 0; font: 400 clamp(18px, 1.5vw, 22px)/1.45 var(--f-serif); font-style: normal; }
 .contact-card > div + div { padding-top: 22px; border-top: 1px solid rgba(26, 13, 5, .08); }
 @media (max-width: 860px) { .contact-card { flex: none; margin: 0 var(--gutter) 48px; } }
-.contact-card { align-self: center; margin-top: 6vh; }
+.contact-card { align-self: center; margin-top: 6vh; flex-basis: 400px; }
+.page-hero.has-card { gap: clamp(32px, 6vw, 120px); padding-top: 96px; padding-bottom: 32px; }
 .contact-card a.link { font: inherit; }
 @media (max-width: 860px) { .contact-card { margin-top: 0; } }
+
+/* healthcare: the market's growth as one big figure (18 Nov) */
+.boom { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; padding: clamp(24px, 3.5vw, 44px);
+  background: rgba(245, 237, 216, .55); box-shadow: 0 0 0 1px rgba(26, 13, 5, .05); border-radius: 6px; max-width: 980px; }
+.page-body .boom .boom-fig { margin: 0; max-width: none; font: 400 clamp(56px, 8vw, 104px)/1 var(--f-display, var(--f-serif)); color: var(--choc, #4A2414); }
+.page-body .boom .boom-head { color: var(--ink, #1A0D05); margin: 0 0 6px; font: 400 clamp(20px, 1.8vw, 26px)/1.25 var(--f-serif); }
+.boom p { max-width: 60ch; }
+@media (max-width: 600px) { .boom { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) { .contact-card { align-self: stretch; margin: 0 var(--gutter) 48px; } }
