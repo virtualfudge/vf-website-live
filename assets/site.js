@@ -479,7 +479,8 @@
     if (!late) body += plate(PLATE[id]);
     if (v.steps) body += sec(headSplit(esc(v.steps.title), paras(v.steps.text, true)) + '<ol class="steps three-steps">' + v.steps.items.map(function (s, k) {
       return '<li><span class="step-no">Step ' + (k + 1) + "</span><h3>" + esc(s[0]) + "</h3><p>" + esc(s[1]) + "</p></li>"; }).join("") + "</ol>", "band");
-    body += sec("<h2>" + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + pair(v.banner.btn) + "</div>", "tagline");   // the page's one call to action, after how it launches
+    body += sec('<div class="tag-words"><h2>' + esc(v.banner.title) + "</h2>" + paras(v.banner.text, true) + '<div class="acts">' + pair(v.banner.btn) + "</div></div>" +
+      (IND_ART[id] ? '<figure class="tag-art" aria-hidden="true"><canvas class="line-art" data-shape="' + IND_ART[id] + '"></canvas></figure>' : ""), "tagline" + (IND_ART[id] ? " has-art" : ""));   // the page's one call to action, after how it launches
     body += cards(d.cases || [], "Example projects", "");
     body += faqHtml(v.faq);
     body += sec("<h2>" + esc(v.also) + '</h2><ul class="niches">' + ALSO.filter(function (a) { return a[1] !== id; }).map(function (a) {
@@ -1367,21 +1368,154 @@
     });
     return L;
   }
+  // one drawing per industry, beside its call to action (Vemir, 18 Nov: "a nice design on the right here for all of them,
+  // those wireframe things from our decks"): drawn in code in the decks' copper line, after their gears, terrain, grid boxes
+  // and wave. z is up; each returns its lines for the moment `time`. up: turns about its own upright axis (else it sways)
+  function circ(cx, cy, cz, r, n, f) { var c = [], j; for (j = 0; j <= n; j++) { var t = j / n * Math.PI * 2; c.push(f ? f(t) : [cx + r * Math.cos(t), cy + r * Math.sin(t), cz]); } return c; }
+  function boxLines(L, x0, x1, y0, y1, z0, z1, k) {   // a box ruled into a grid of k on each side face (the decks' grid boxes)
+    var i, u; for (i = 0; i <= k; i++) {
+      u = i / k; var x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u, z = z0 + (z1 - z0) * u;
+      L.push([[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], [x0, y0, z]]);
+      L.push([[x, y0, z0], [x, y0, z1]], [[x, y1, z0], [x, y1, z1]], [[x0, y, z0], [x0, y, z1]], [[x1, y, z0], [x1, y, z1]]);
+      if (i % k === 0) L.push([[x, y0, z1], [x, y1, z1]], [[x0, y, z1], [x1, y, z1]]);
+    }
+  }
+  function ico(freq, rad) {   // an icosahedron's edges, each face cut into freq² and pushed out onto the sphere
+    var p = (1 + Math.sqrt(5)) / 2, V = [[-1, p, 0], [1, p, 0], [-1, -p, 0], [1, -p, 0], [0, -1, p], [0, 1, p], [0, -1, -p], [0, 1, -p], [p, 0, -1], [p, 0, 1], [-p, 0, -1], [-p, 0, 1]];
+    var F = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+    var L = [], seen = {};
+    function pt(a, b, c, i, j) { var w = freq - i - j, q = [0, 1, 2].map(function (d) { return (a[d] * w + b[d] * i + c[d] * j) / freq; }), m = Math.hypot(q[0], q[1], q[2]); return q.map(function (d) { return d / m * rad; }); }
+    function edge(P, Q) { var key = [P, Q].map(function (v) { return v.map(function (d) { return d.toFixed(3); }).join(","); }).sort().join("|"); if (!seen[key]) { seen[key] = 1; L.push([P, Q]); } }
+    F.forEach(function (f) {
+      var a = V[f[0]], b = V[f[1]], c = V[f[2]], i, j;
+      for (i = 0; i < freq; i++) for (j = 0; j < freq - i; j++) {
+        var A = pt(a, b, c, i, j), B = pt(a, b, c, i + 1, j), C = pt(a, b, c, i, j + 1);
+        edge(A, B); edge(B, C); edge(C, A);
+      }
+    });
+    return L;
+  }
+  function gear(cx, cy, R, n, rot, L) {   // a toothed wheel, front and back faces, triangulated to its hub like the decks' gears
+    var o = [], k, h = R * .2, hub = R * .38, d = .09;
+    for (k = 0; k < n * 4; k++) { var a = rot + k / (n * 4) * Math.PI * 2, r = (k % 4 === 1 || k % 4 === 2) ? R + h : R; o.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
+    [-d, d].forEach(function (z) {
+      L.push(o.concat([o[0]]).map(function (q) { return [q[0], q[1], z]; }));
+      L.push(circ(cx, cy, z, hub, 24));
+      o.forEach(function (q, j) { if (j % 2 === 0) { var a = Math.atan2(q[1] - cy, q[0] - cx); L.push([[cx + hub * Math.cos(a), cy + hub * Math.sin(a), z], [q[0], q[1], z]]); } });
+    });
+    o.forEach(function (q, j) { if (j % 4 === 1 || j % 4 === 2) L.push([[q[0], q[1], -d], [q[0], q[1], d]]); });
+  }
+  var SHAPES = {
+    // retail: a cut gem, table and girdle, turning
+    gem: { up: 1, f: function () {
+      var L = [], n = 16, T = [], G = [], j;
+      for (j = 0; j < n; j++) { var a = j / n * Math.PI * 2; G.push([.95 * Math.cos(a), .95 * Math.sin(a), .12]); if (j % 2 === 0) T.push([.52 * Math.cos(a + Math.PI / n), .52 * Math.sin(a + Math.PI / n), .52]); }
+      L.push(G.concat([G[0]]), T.concat([T[0]]), G.map(function (q) { return [q[0], q[1], .02]; }).concat([[G[0][0], G[0][1], .02]]));
+      T.forEach(function (t, i) { L.push([G[(i * 2 + n - 1) % n], t, G[(i * 2 + 1) % n]], [t, G[i * 2]]); });
+      G.forEach(function (g) { L.push([[g[0], g[1], .02], [g[0] * .45, g[1] * .45, -.42], [0, 0, -.98]]); });
+      return L;
+    } },
+    // CPG: a package, its sides ruled into a grid
+    box: { up: 1, tilt: 1.0, f: function () { var L = []; boxLines(L, -.62, .62, -.62, .62, -.62, .62, 4); return L; } },
+    // healthcare: a double helix, its rungs between
+    helix: { up: 1, f: function () {
+      var L = [], A = [], B = [], j, N = 120;
+      for (j = 0; j <= N; j++) { var z = -1.05 + j / N * 2.1, t = z * 4.2; A.push([.42 * Math.cos(t), .42 * Math.sin(t), z]); B.push([.42 * Math.cos(t + Math.PI), .42 * Math.sin(t + Math.PI), z]); }
+      L.push(A, B, A.map(function (q) { return [q[0] * .86, q[1] * .86, q[2]]; }), B.map(function (q) { return [q[0] * .86, q[1] * .86, q[2]]; }));
+      for (j = 0; j <= N; j += 6) L.push([A[j], [A[j][0] * .1, A[j][1] * .1, A[j][2]], B[j]]);
+      return L;
+    } },
+    // sports: a ball, cut into triangles
+    ball: { up: 1, f: function () { return ico(3, 1); } },
+    // museums: an amphora turned on a wheel, two handles
+    vase: { up: 1, f: function () {
+      var K = [[-1, .26], [-.9, .2], [-.6, .36], [-.2, .56], [.15, .5], [.45, .26], [.62, .17], [.85, .18], [1, .3]];
+      var L = [], prof = function (z) { for (var q = 1; q < K.length; q++) if (z <= K[q][0]) { var u = (z - K[q - 1][0]) / (K[q][0] - K[q - 1][0]), e = u * u * (3 - 2 * u); return K[q - 1][1] + (K[q][1] - K[q - 1][1]) * e; } return K[K.length - 1][1]; };
+      var i, j, M = 40, zs = []; for (j = 0; j <= M; j++) zs.push(-1 + j / M * 2);
+      for (i = 0; i < 16; i++) { var a = i / 16 * Math.PI * 2; L.push(zs.map(function (z) { return [prof(z) * Math.cos(a), prof(z) * Math.sin(a), z]; })); }
+      for (j = 0; j <= M; j += 4) L.push(circ(0, 0, zs[j], prof(zs[j]), 40));
+      [1, -1].forEach(function (s) { var c = []; for (j = 0; j <= 20; j++) { var t = j / 20 * Math.PI; c.push([s * (.18 + .3 * Math.sin(t)), 0, .72 - .42 * (1 - Math.cos(t)) / 2]); } L.push(c); });
+      return L;
+    } },
+    // marketing and events: a ring of attention around one point
+    rings: { up: 1, live: 1, tilt: .92, f: function (time) {
+      var L = ico(1, .34).map(function (l) { return l.map(function (q) { return [q[0], q[1], q[2] + .25]; }); }), k;
+      for (k = 0; k < 5; k++) { var p = (time * .0001 + k / 5) % 1; L.push(circ(0, 0, -.3, .42 + p * .78, 72)); }
+      L.push([[0, 0, -.09], [0, 0, -.3]], circ(0, 0, -.3, .2, 32));
+      return L;
+    } },
+    // training: grid blocks rising step by step
+    blocks: { up: 1, sway: 1, tilt: 1.3, f: function () {
+      var L = []; boxLines(L, -.9, -.3, -.4, .4, -.6, -.2, 3); boxLines(L, -.3, .3, -.4, .4, -.6, .15, 3); boxLines(L, .3, .9, -.4, .4, -.6, .5, 3);
+      return L;
+    } },
+    // tourism: mountains, triangulated, the way the decks draw them
+    terrain: { live: 1, tilt: 1.12, f: function (time) {
+      var L = [], N = 16, i, j, P = [], pk = [[-.35, .1, .95], [.35, -.25, .7], [.7, .45, .45], [-.75, -.5, .4]];
+      for (i = 0; i <= N; i++) { P.push([]); for (j = 0; j <= N; j++) {
+        var x = -1.2 + i / N * 2.4, y = -1.2 + j / N * 2.4, z = -.35 + .03 * Math.sin(x * 4 + time * .0005) * Math.cos(y * 3);
+        pk.forEach(function (p) { var d = Math.hypot(x - p[0], y - p[1]); z += p[2] * Math.max(0, 1 - d / .55); });
+        P[i].push([x, y, z]); } }
+      for (i = 0; i <= N; i++) { L.push(P[i]); L.push(P.map(function (r) { return r[i]; })); }
+      for (i = 0; i < N; i++) for (j = 0; j < N; j++) L.push([P[i][j], P[i + 1][j + 1]]);
+      return L;
+    } },
+    // gaming: a twenty-sided die, tumbling
+    die: { up: 1, tumble: 1, f: function () { return ico(1, 1); } },
+    // entertainment: a wave rolling through a sheet of light
+    wave: { live: 1, tilt: 1.05, f: function (time) {
+      var L = [], i, j, NX = 26, NY = 12, P = [];
+      for (i = 0; i <= NX; i++) { P.push([]); for (j = 0; j <= NY; j++) {
+        var x = -1.35 + i / NX * 2.7, y = -.8 + j / NY * 1.6;
+        P[i].push([x, y, .22 * Math.sin(x * 3.2 - time * .0011 + y * 1.4) * Math.cos(y * 1.7) + .18 * Math.exp(-Math.pow((x - .35 * Math.sin(time * .0003)) / .35, 2))]); } }
+      for (i = 0; i <= NX; i++) L.push(P[i]);
+      for (j = 0; j <= NY; j++) L.push(P.map(function (r) { return r[j]; }));
+      return L;
+    } },
+    // real estate: a house drawn as a frame, its floor ruled
+    house: { up: 1, sway: 1, tilt: 1.25, f: function () {
+      var L = [], w = .7, d = .55, z0 = -.6, z1 = .15, zr = .65, i;
+      boxLines(L, -w, w, -d, d, z0, z1, 4);
+      L.push([[-w, -d, z1], [-w, 0, zr], [-w, d, z1]], [[w, -d, z1], [w, 0, zr], [w, d, z1]], [[-w, 0, zr], [w, 0, zr]]);
+      for (i = 1; i < 4; i++) { var x = -w + i / 4 * 2 * w; L.push([[x, -d, z1], [x, 0, zr], [x, d, z1]]); }
+      L.push([[-.15, -d - .001, z0], [-.15, -d - .001, -.35], [.15, -d - .001, -.35], [.15, -d - .001, z0]]);
+      return L;
+    } },
+    // manufacturing: three gears turning together
+    gears: { live: 1, tilt: .42, f: function (time) {
+      var L = [], a = time * .00025;
+      gear(-.42, .28, .5, 10, a, L); gear(.5, .14, .36, 7, -a * 10 / 7 + .19, L); gear(.12, -.68, .3, 6, -a * 10 / 6 + .3, L);
+      return L;
+    } },
+    // education: a small world and its orbits, a moon on each
+    orbits: { up: 1, live: 1, f: function (time) {
+      var L = artShape("sphere").map(function (l) { return l.map(function (q) { return [q[0] * .34, q[1] * .34, q[2] * .34]; }); });
+      [[1.05, .35, 0, .00034], [.8, -.6, 1.2, .0005], [1.25, .15, 2.4, .00022]].forEach(function (o) {
+        var ct = Math.cos(o[1]), st = Math.sin(o[1]), rot = function (t, r) { var x = r * Math.cos(t + o[2]), y = r * Math.sin(t + o[2]); return [x, y * ct, y * st]; };
+        L.push(circ(0, 0, 0, 0, 96, function (t) { return rot(t, o[0]); }));
+        var m = rot(time * o[3] * 6, o[0]); L.push(circ(0, 0, 0, 0, 20, function (t) { return [m[0] + .055 * Math.cos(t), m[1] + .055 * Math.sin(t) * ct, m[2] + .055 * Math.sin(t) * st]; }));
+      });
+      return L;
+    } }
+  };
+  var IND_ART = { retail: "gem", cpg: "box", medicine: "helix", sports: "ball", events: "rings", museums: "vase", training: "blocks",
+    tourism: "terrain", gaming: "die", entertainment: "wave", realestate: "house", manufacturing: "gears", education: "orbits" };
   function artDraw(o, time) {
     var cv = o.cv, r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
     var W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
     if (!W || !H) return;
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
     var x = cv.getContext("2d"); x.clearRect(0, 0, W, H);
-    var book = o.kind === "book", spin = book ? Math.sin(time * .00009) * .14 : time * .00011 + o.seed, tilt = book ? .9 : o.kind === "torus" ? 1.08 : .42 + Math.sin(time * .00007) * .08;
-    var cz = Math.cos(spin), sz = Math.sin(spin), cx = Math.cos(tilt), sx = Math.sin(tilt);
-    var S = Math.min(W, H) * (book ? .31 : o.kind === "torus" ? .34 : .4), X0 = W / 2, Y0 = H * (book ? .5 : .5);
-    x.lineWidth = dpr; x.strokeStyle = book ? "rgba(74, 36, 20, .45)" : "rgba(26, 13, 5, .16)"; x.lineJoin = "round";
-    (book ? bookLines(time) : o.lines).forEach(function (l) {
+    var book = o.kind === "book", sh = SHAPES[o.kind], spin = book ? Math.sin(time * .00009) * .14 : time * .00011 + o.seed, tilt = book ? .9 : o.kind === "torus" ? 1.08 : .42 + Math.sin(time * .00007) * .08;
+    if (sh) { spin = sh.up && !sh.sway ? time * .00012 + .6 : sh.sway ? .62 + Math.sin(time * .0001) * .3 : .5 + Math.sin(time * .00009) * .32; tilt = sh.tilt || (sh.tumble ? 1.1 + Math.sin(time * .0002) * .35 : 1.22); }
+    var cz = Math.cos(spin), sz = Math.sin(spin), cx = Math.cos(tilt), sx = Math.sin(tilt), PV = sh ? 8 : 3.2;
+    var S = Math.min(W, H) * (book ? .31 : sh ? .34 : o.kind === "torus" ? .34 : .4), X0 = W / 2, Y0 = H * (book ? .5 : .5);
+    x.lineWidth = dpr; x.strokeStyle = book || sh ? "rgba(122, 66, 30, .42)" : "rgba(26, 13, 5, .16)"; x.lineJoin = "round";
+    (book ? bookLines(time) : sh && sh.live ? sh.f(time) : o.lines).forEach(function (l) {
       x.beginPath();
       l.forEach(function (q, k) {
         var x1 = q[0] * cz - q[1] * sz, y1 = q[0] * sz + q[1] * cz, z1 = q[2];
-        var y2 = y1 * cx - z1 * sx, z2 = y1 * sx + z1 * cx, f = 3.2 / (3.2 + z2);
+        var y2 = y1 * cx - z1 * sx, z2 = y1 * sx + z1 * cx, f = PV / (PV + z2);
         var px = X0 + x1 * S * f, py = Y0 + y2 * S * f;
         if (k) x.lineTo(px, py); else x.moveTo(px, py);
       });
@@ -1403,8 +1537,8 @@
     }, { rootMargin: "120px 0px" });
     [].forEach.call(cvs, function (cv, k) {
       cv.setAttribute("data-on", "");
-      var sh = cv.getAttribute("data-shape"), o = { cv: cv, kind: sh === "torus" || sh === "book" ? sh : "sphere", seed: k * 1.7, on: !artIO };
-      o.lines = o.kind === "book" ? [] : artShape(o.kind); ART.push(o);
+      var sh = cv.getAttribute("data-shape"), o = { cv: cv, kind: sh === "torus" || sh === "book" || SHAPES[sh] ? sh : "sphere", seed: k * 1.7, on: !artIO };
+      o.lines = o.kind === "book" || (SHAPES[sh] && SHAPES[sh].live) ? [] : SHAPES[sh] ? SHAPES[sh].f(0) : artShape(o.kind); ART.push(o);
       if (artIO) artIO.observe(cv);
       if (REDUCE) requestAnimationFrame(function () { artDraw(o, o.kind === "book" ? 9000 : 0); });
     });

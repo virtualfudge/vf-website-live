@@ -1272,3 +1272,13 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 
 .ind-body .answer-head > div > h2 { margin: 0 0 22px; }   /* a heading with its first paragraph under it */
 .ind-body .answer-head.lead-split { align-items: end; }   /* the rest of the words end level with the first paragraph */
+/* an industry's call to action with its drawing beside it, in the decks' copper wireframe (Vemir, 18 Nov) */
+.tagline.has-art { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; column-gap: clamp(24px, 4vw, 72px); }
+.tag-art { margin: 0; display: flex; justify-content: center; }
+.tag-art canvas { display: block; width: min(100%, 460px); aspect-ratio: 1 / 1; height: auto; }
+@media (max-width: 860px) {
+  .tagline.has-art { grid-template-columns: minmax(0, 1fr); }
+  .tag-art { order: -1; margin-bottom: 8px; }
+  .tag-art { margin: -12px 0 0; }
+  .tag-art canvas { width: min(72%, 270px); aspect-ratio: 1.3 / 1; }
+}
