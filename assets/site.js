@@ -104,12 +104,24 @@
     return '<section class="block-sec"><h2>' + heading + "</h2>" + (lead ? '<p class="lead">' + lead + "</p>" : "") + '<div class="film">' +
       items.map(function (i) { return clip(i[0], i[1], i[2]); }).join("") + "</div></section>";
   }
+  // The show-floor photos' smaller copies (tools/make-photo-copies.sh, 20 Nov 2026): the package carries each photo at
+  // 1300 px on its long side, and a 640 and a 960 px wide copy where it is at least 100 px narrower than that (the same
+  // rule as the script), so the browser takes the smallest sharp one. A gallery draws a photo at most 300 css px wide up to
+  // 600 px windows, about half the window up to 1300 and at most 650 beyond; a post's side photo is the text's width (at
+  // most 640) under 1180 px and at most 400 beside it (measured from 320 to 2560 px windows).
+  var GALLERY_SIZES = "(max-width: 600px) 300px, (max-width: 1300px) 52vw, 660px";
+  var ASIDE_PHOTO_SIZES = "(max-width: 672px) calc(100vw - 32px), (max-width: 1179px) 640px, 400px";
+  function photoSrcset(name, w, h, sizes) {
+    var full = Math.round(w * Math.min(1, 1300 / Math.max(w, h)));
+    var set = [640, 960].filter(function (c) { return c < full - 100; }).map(function (c) { return "/assets/events/small/" + name + "-" + c + ".jpg " + c + "w"; });
+    return set.length ? '" srcset="' + set.join(", ") + ", /assets/events/" + name + ".jpg " + full + 'w" sizes="' + sizes : "";
+  }
   // a justified gallery: every photo and clip keeps its own shape, each row the same height; [kind, name, w, h, words]
   function gallery(items) {
     return '<div class="gallery">' + items.map(function (i) {
       var r = (i[2] / i[3]).toFixed(4);
       return '<figure class="g' + (i[0] === "clip" ? " g-clip" : "") + '" style="--r:' + r + '">' + (i[0] === "clip" ? clipVideo(i[1], i[4])
-        : '<img src="/assets/events/' + i[1] + '.jpg" width="' + i[2] + '" height="' + i[3] + '" alt="' + esc(i[4]) + '" loading="lazy" decoding="async">') + "</figure>";
+        : '<img src="/assets/events/' + i[1] + '.jpg' + photoSrcset(i[1], i[2], i[3], GALLERY_SIZES) + '" width="' + i[2] + '" height="' + i[3] + '" alt="' + esc(i[4]) + '" loading="lazy" decoding="async">') + "</figure>";
     }).join("") + "</div>";
   }
 
@@ -506,9 +518,15 @@
   // as a phone's AR would see it: the frame locks on and a tag pins each name to its face (where they stand in the photo)
   var TEAM_PHOTO = { src: "/assets/events/nrf-team.jpg", w: 1600, h: 1067, alt: "Evan Muchnicki and Joshua Gordon at the Virtual Fudge booth, NRF 2026.",
     pins: [["Evan Muchnicki", "Project Manager", 29, 30, "left"], ["Joshua Gordon", "Founder and CEO", 73, 25, "right"]] };
+  // its copies (20 Nov 2026): the smaller ones of the gallery's, the package's 1300 px file and the 1600 px camera file
+  // (assets/events/large, tools/make-photo-copies.sh), since a 2x laptop draws it up to 1720 device px. It fills the
+  // width less the gutters (at most 92%) when the page stands (portrait, or a phone), else 52% of the window up to 860 px
+  // (measured from 320 to 2560 px windows)
+  var TEAM_PHOTO_SRCSET = photoSrcset("nrf-team", 1600, 1067, "(orientation: portrait) 92vw, (max-width: 760px) and (min-height: 521px) 92vw, (max-width: 1654px) 52vw, 860px")
+    .replace('" sizes=', ", /assets/events/large/nrf-team-1600.jpg 1600w\" sizes=");
   function teamPhoto() {
     var t = TEAM_PHOTO;
-    return '<figure class="ar-photo"><div class="ar-photo-in"><img src="' + t.src + '" width="' + t.w + '" height="' + t.h + '" alt="' + esc(t.alt) + '" decoding="async">' +
+    return '<figure class="ar-photo"><div class="ar-photo-in"><img src="' + t.src + TEAM_PHOTO_SRCSET + '" width="' + t.w + '" height="' + t.h + '" alt="' + esc(t.alt) + '" decoding="async">' +
       t.pins.map(function (p, k) { return '<span class="ar-pin ' + p[4] + '" style="--x:' + p[2] + "%;--y:" + p[3] + "%;--k:" + k + '" aria-hidden="true"><i></i><span class="ar-pin-tag">' + esc(p[0]) + "<small>" + esc(p[1]) + "</small></span></span>"; }).join("") +
       '<span class="finder-lock" aria-hidden="true"><span class="finder-scan"></span></span></div><figcaption class="finder-read"><span class="finder-tag"><i></i>Tracking</span><span class="finder-name">Our booth at NRF 2026</span></figcaption></figure>';
   }
@@ -706,7 +724,7 @@
   function aside(a) {
     if (a[0] === "clip") { var c = CLIP_CAP[a[1]]; return clip(a[1], c[0], [c[1], c[1].indexOf("#show") === 0 ? "See the show" : "The project"]).replace('<figure class="clip', '<figure class="aside clip'); }
     if (a[0] === "photo") { var f = photoOf(a[1]); if (!f) return "";
-      return '<figure class="aside aside-photo"><img src="/assets/events/' + a[1] + '.jpg" width="' + f[0][2] + '" height="' + f[0][3] + '" alt="' + esc(a[2]) + '" loading="lazy" decoding="async">' +
+      return '<figure class="aside aside-photo"><img src="/assets/events/' + a[1] + '.jpg' + photoSrcset(a[1], f[0][2], f[0][3], ASIDE_PHOTO_SIZES) + '" width="' + f[0][2] + '" height="' + f[0][3] + '" alt="' + esc(a[2]) + '" loading="lazy" decoding="async">' +
         "<figcaption>" + esc(a[2]) + ' <a class="link" href="#show-' + f[1].id + '">See the show</a></figcaption></figure>'; }
     var name = (ALSO.filter(function (x) { return x[1] === a[1]; })[0] || [""])[0];
     return '<figure class="aside aside-block"><img src="/assets/stills/' + a[1] + '.jpg" width="1200" height="1200" alt="" loading="lazy" decoding="async">' +
@@ -835,7 +853,7 @@
   function addr(a) { return esc(a).replace("@", "@<wbr>"); }
   function pageContact() {
     // the ways to reach us beside the words, where the block stood (Vemir, 18 Nov: "contact page should make more sense")
-    var card = '<aside class="contact-card" aria-label="How to reach us">' +
+    var card = '<aside class="contact-card" aria-labelledby="reach-h"><h2 class="sr" id="reach-h">How to reach us</h2>' +   // headings in order for screen readers
       '<div><h3>Write</h3><p><a class="link" href="mailto:' + STUDIO.email + '">' + addr(STUDIO.email) + "</a></p></div>" +
       '<div><h3>Call</h3><p><a class="link" href="tel:' + STUDIO.tel + '">' + STUDIO.phone + "</a></p></div>" +
       "<div><h3>Visit</h3><address>" + STUDIO.address.join("<br>") + "</address></div></aside>";
@@ -920,6 +938,8 @@
       fields: [["Full name", "text", 1, "name", null, null, "Full name"], ["Email address", "email", 1, "email", null, null, "Email address"],
                ["@attach"],   // VF asks for the résumé right after the email address
                ["LinkedIn profile", "url", 0, "url", null, null, "LinkedIn profile"], ["Message", "area", 0, "", null, null, "Message"]],
+      // numbered like the quote form (19 Nov): VF's own "How to reach you", then each field under its own label, so no new words
+      groups: [["How to reach you", 2], [null, 1], [null, 1], [null, 1]],
       attach: { label: "Attach resume/CV", button: "Choose file", multiple: false, required: true, maxMB: 5, accept: ".pdf,.docx,.doc", note: "Max 5 MB. Allowed formats: PDF, DOCX, DOC." } }
   ];
   function fieldHtml(f, d, k) {
@@ -953,7 +973,7 @@
       }).join("") : '<div class="vf-fields">' + f.fields.map(one).join("") + "</div>";
     var at2 = 0, sum = f.groups ? '<nav class="vf-sum" aria-label="' + esc(f.title) + '"><span class="vf-sum-bar" aria-hidden="true"><i></i></span><ol>' + f.groups.map(function (g, n) {
         var first = f.fields[at2]; at2 += g[1];
-        return '<li><a href="#' + f.id + "-group-" + n + '" data-step="' + n + '"><span class="vf-sum-num">' + num(n) + '<i class="vf-tick"></i></span><span class="vf-sum-title">' + esc(g[0] || first[0]) + '</span><span class="vf-sum-said"></span></a></li>';
+        return '<li><a href="#' + f.id + "-group-" + n + '" data-step="' + n + '"><span class="vf-sum-num">' + num(n) + '<i class="vf-tick"></i></span><span class="vf-sum-title">' + esc(g[0] || (first[0] === "@attach" ? f.attach.label : first[0])) + '</span><span class="vf-sum-said"></span></a></li>';
       }).join("") + "</ol></nav>" : "";
     return '<form class="vf-form' + (f.groups ? " vf-grouped" : "") + '" id="form-' + f.id + '" data-subject="' + f.subject + '" data-to="' + to + '" data-done="' + esc(f.done) + '" novalidate' + (on ? "" : " hidden") + '><h2>' + esc(f.title) + "</h2>" + (f.lead ? '<p class="lead">' + esc(f.lead) + "</p>" : "") +
       (f.groups ? '<div class="vf-body"><div class="vf-main">' + body : body) +
@@ -1143,21 +1163,22 @@
     var sum = $(".vf-sum", form); if (!sum) return;
     var need = 0, have = 0;
     form.querySelectorAll(".vf-group").forEach(function (g) {
-      var n = g.getAttribute("data-group"), gNeed = 0, gHave = 0, said = [];
+      var n = g.getAttribute("data-group"), gNeed = 0, gHave = 0, gAny = 0, said = [];
       g.querySelectorAll("input, textarea").forEach(function (el) {
         if (el.closest("[data-when]") && el.closest("[data-when]").hidden) return;
         if (el.type === "radio") {
           if (el !== g.querySelector('input[type="radio"][name="' + el.name + '"]')) return;
           var pk = g.querySelector('input[type="radio"][name="' + el.name + '"]:checked');
-          if (el.required) { gNeed++; if (pk) gHave++; } if (pk) said.push(pk.value); return;
+          if (el.required) { gNeed++; if (pk) gHave++; } if (pk) { gAny = 1; said.push(pk.value); } return;
         }
-        if (el.type === "file") { var fl = filesOf(form); if (fl.length) said.push(fl.map(function (x) { return x.name; }).join(", ")); return; }
-        var v = el.value.trim(); if (el.required) { gNeed++; if (v) gHave++; }
+        if (el.type === "file") { var fl = filesOf(form); if (el.required) { gNeed++; if (fl.length) gHave++; } if (fl.length) { gAny = 1; said.push(fl.map(function (x) { return x.name; }).join(", ")); } return; }
+        var v = el.value.trim(); if (el.required) { gNeed++; if (v) gHave++; } if (v) gAny = 1;
         if (!v || el.tagName === "TEXTAREA" || el.type === "email" || el.type === "tel") return;
         if (el.getAttribute("autocomplete") === "family-name" && said.length && g.querySelector('[autocomplete="given-name"]').value.trim()) said[said.length - 1] += " " + v; else said.push(v);
       });
       need += gNeed; have += gHave;
-      var ok = gNeed > 0 && gHave === gNeed, a = $('a[data-step="' + n + '"]', sum);
+      // a group of optional fields (careers' LinkedIn, Message) ticks once something is in it
+      var ok = gNeed ? gHave === gNeed : !!gAny, a = $('a[data-step="' + n + '"]', sum);
       g.classList.toggle("is-done", ok); if (a) { a.classList.toggle("is-done", ok); $(".vf-sum-said", a).textContent = said.join(" · "); }
     });
     $(".vf-sum-bar i", sum).style.transform = "scaleX(" + (need ? have / need : 0) + ")";
@@ -1545,10 +1566,27 @@
     });
     if (!artRaf) artRaf = requestAnimationFrame(artLoop);
   }
+  // an industry's figures count up as they come in (backlog F, 19 Nov): the first number in each runs from 0 to its value in
+  // step with the card's own fade (80 ms apart), the rest of the text ("%", "×", "/10", "≤", "+") stays as written, and the
+  // last frame writes the original text back, so the words are exactly VF's. Never under reduced motion (wireReveal returns first)
+  function countFigs(list) {
+    [].forEach.call(list.querySelectorAll(".fig"), function (f, k) {
+      var txt = f.textContent, m = /\d+(?:\.\d+)?/.exec(txt); if (!m) return;
+      var to = parseFloat(m[0]), dp = (m[0].split(".")[1] || "").length, a = txt.slice(0, m.index), b = txt.slice(m.index + m[0].length);
+      var t0 = performance.now() + k * 80 + 120, dur = 1100;
+      f.classList.add("counting"); f.textContent = a + (0).toFixed(dp) + b;
+      (function step(now) {
+        if (!f.isConnected) return;
+        var t = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - t, 3);
+        if (t < 1) { f.textContent = a + (to * e).toFixed(dp) + b; requestAnimationFrame(step); }
+        else { f.textContent = txt; f.classList.remove("counting"); }
+      })(performance.now());
+    });
+  }
   function wireReveal(root) {
     if (revealIo) { revealIo.disconnect(); revealIo = null; }
     if (REDUCE || !("IntersectionObserver" in window)) return;
-    revealIo = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); revealIo.unobserve(e.target); } }); }, { rootMargin: "0px 0px -10% 0px" });
+    revealIo = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); revealIo.unobserve(e.target); if (e.target.classList.contains("figures")) countFigs(e.target); } }); }, { rootMargin: "0px 0px -10% 0px" });
     root.querySelectorAll(".page-body .three, .page-body .steps, .page-body .data, .page-body .team, .page-body .four, .page-body .figures, .post .pcards").forEach(function (g) {
       g.classList.add("rv"); [].forEach.call(g.children, function (c, k) { c.style.setProperty("--i", k); }); revealIo.observe(g);
     });
