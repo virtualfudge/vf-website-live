@@ -1586,7 +1586,7 @@
   function wireReveal(root) {
     if (revealIo) { revealIo.disconnect(); revealIo = null; }
     if (REDUCE || !("IntersectionObserver" in window)) return;
-    revealIo = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); revealIo.unobserve(e.target); if (e.target.classList.contains("figures")) countFigs(e.target); } }); }, { rootMargin: "0px 0px -10% 0px" });
+    revealIo = new IntersectionObserver(function (es) { var n = 0; es.forEach(function (e) { if (e.isIntersecting) { if (e.target.classList.contains("rv-card")) e.target.style.setProperty("--i", n++); e.target.classList.add("in"); revealIo.unobserve(e.target); if (e.target.classList.contains("figures")) countFigs(e.target); } }); }, { rootMargin: "0px 0px -10% 0px" });
     root.querySelectorAll(".page-body .three, .page-body .steps, .page-body .data, .page-body .team, .page-body .four, .page-body .figures, .post .pcards").forEach(function (g) {
       g.classList.add("rv"); [].forEach.call(g.children, function (c, k) { c.style.setProperty("--i", k); }); revealIo.observe(g);
     });
@@ -1594,7 +1594,11 @@
       if (!m.querySelector(".ar-rv-lock") && !m.classList.contains("ar-photo-in")) { var l = document.createElement("span"); l.className = "ar-rv-lock"; l.setAttribute("aria-hidden", "true"); l.innerHTML = '<span class="ar-rv-scan"></span>'; m.appendChild(l); }
       m.classList.add("ar-rv"); revealIo.observe(m);
     });
-    root.querySelectorAll(".post .say").forEach(function (q) { q.classList.add("rv-say"); revealIo.observe(q); });   // a callout's brass rule draws down as it comes in (backlog F)
+    root.querySelectorAll(".post .say").forEach(function (q) { q.classList.add("rv-say"); revealIo.observe(q); });
+    // the blog's cards (/blog/ and a post's "Keep reading") come in one by one as they reach the screen, like the project cards:
+    // those arriving together stagger 90 ms apart, and each picture settles from a slight zoom. The wide newest post at the top
+    // of /blog/ stays as it is (it is the first thing seen). Never under reduced motion (returned above)
+    root.querySelectorAll(".post-grid > li:not(.lead-post)").forEach(function (c) { c.classList.add("rv-card"); revealIo.observe(c); });   // a callout's brass rule draws down as it comes in (backlog F)
   }
   // About's window on the old story: where the window stands in the screen is how far the scene has played (0 as its top comes
   // in under the screen, 1 as its bottom leaves over the top), so scrolling back plays it back. Off screen it does nothing

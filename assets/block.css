@@ -713,6 +713,12 @@ h1, h2, h3, .card-title, .post-title { text-wrap: balance; }   /* every heading'
 .post th { font-weight: 500; border-bottom-color: var(--brass); }
 .more-posts h2 { margin-bottom: 5vh; }
 .more-posts .post-grid + p { margin-top: 44px; }
+/* a blog card comes in as it reaches the screen (backlog F, 23 Nov; site.js wireReveal adds rv-card only when motion is allowed) */
+.post-grid > li.rv-card { opacity: 0; transform: translateY(24px); transition: opacity .7s ease calc(var(--i, 0) * 90ms), transform .8s cubic-bezier(.2, .8, .2, 1) calc(var(--i, 0) * 90ms); }
+.post-grid > li.rv-card.in { opacity: 1; transform: none; }
+.post-grid > li.rv-card .post-pic img { scale: 1.06; transition: transform .8s cubic-bezier(.2, .8, .2, 1), scale 1.4s cubic-bezier(.2, .8, .2, 1) calc(var(--i, 0) * 90ms + .1s); }
+.post-grid > li.rv-card.in .post-pic img { scale: 1; }
+@media (prefers-reduced-motion: reduce) { .post-grid > li.rv-card { opacity: 1; transform: none; transition: none; } .post-grid > li.rv-card .post-pic img { scale: 1; } }
 @media (max-width: 640px) { .post p, .post li { font-size: 18px; } .post > p:first-child { font-size: 20px; } .post-hero .col { padding-top: 16vh; } }
 
 /* the newsletter, on this site: VF's words, one field and its button */
