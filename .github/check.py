@@ -23,13 +23,23 @@ def fetch(url):
         return r.status, r.read(), time.time() - t0
 
 
-# 1. the address answers, over HTTPS, quickly
-try:
-    status, body, secs = fetch(base + "?check=" + str(int(time.time())))
-    notes.append("%s answered %d in %.1f s (%d KB)" % (base, status, secs, len(body) // 1024))
-    if secs > 10: problems.append("the page took %.1f s to arrive" % secs)
-except Exception as e:
-    print("FAIL: %s did not answer: %s" % (base, e)); sys.exit(1)
+# 1. the address answers, over HTTPS, quickly. (24 Nov 2026: twice in a day GitHub's machine got no answer at all for a
+# few minutes while the site answered everyone else in a tenth of a second, and each blip emailed a failure. So a page that
+# doesn't answer is asked again 4 times over about 4 minutes before the run fails, and the times are printed in the log.)
+tries = []
+for wait in (0, 30, 60, 60, 60):
+    time.sleep(wait)
+    try:
+        status, body, secs = fetch(base + "?check=" + str(int(time.time())))
+        break
+    except Exception as e:
+        tries.append("%s: %s" % (time.strftime("%H:%M:%S UTC", time.gmtime()), e))
+else:
+    print("FAIL: %s did not answer GitHub's check machine %d times over about 4 minutes:\n  %s" % (base, len(tries), "\n  ".join(tries)))
+    sys.exit(1)
+if tries: notes.append("%s gave no answer %d time(s) first (%s), then answered" % (base, len(tries), "; ".join(tries)))
+notes.append("%s answered %d in %.1f s (%d KB)" % (base, status, secs, len(body) // 1024))
+if secs > 10: problems.append("the page took %.1f s to arrive" % secs)
 locked = b'id="lock"' in body
 # (behind the password the code goes out inside the page, encrypted: then only the plain files are asked for)
 for a in (() if locked else ("assets/site.js", "assets/block.js", "assets/block.css")) + ("assets/stills/top.jpg", "assets/media/tryon-face.mp4"):

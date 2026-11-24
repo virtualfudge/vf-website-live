@@ -11,14 +11,15 @@ concurrency: { group: site-check, cancel-in-progress: false }
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with: { python-version: "3.12" }
       - run: pip install playwright==1.60.0
       # after a publish, give GitHub Pages a minute to serve the new copy
       - if: github.event_name == 'push'
         run: sleep 75
-      # a second look a minute and a half later before calling it a failure, so a passing blip on the network emails nobody
-      - run: python .github/check.py || (sleep 90 && python .github/check.py)
+      # a second whole look three minutes later before calling it a failure, so a passing blip on the network emails nobody
+      # (check.py also asks a page that doesn't answer again over about 4 minutes)
+      - run: python .github/check.py || (sleep 180 && python .github/check.py)
